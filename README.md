@@ -1,2 +1,2 @@
 # loquegasto-backend
-Backend del la app Lo Que Gasto
+Backend del bot de Telegram LoQueGasto
