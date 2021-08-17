@@ -22,23 +22,24 @@ func (txn *Transaction) ToDTO() *TransactionDTO {
 		Amount:      txn.Amount,
 		Description: txn.Description,
 		Source:      txn.Source,
-		CreatedAt:   txn.CreatedAt,
+		CreatedAt:   &txn.CreatedAt,
 	}
 }
 
 type TransactionDTO struct {
-	ID          string    `json:"id,omitempty"`
-	MsgID       int       `json:"msg_id"`
-	Amount      int64     `json:"amount"`
-	Description string    `json:"description"`
-	Source      string    `json:"source,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
+	ID          string     `json:"id,omitempty"`
+	MsgID       int        `json:"msg_id"`
+	Amount      int64      `json:"amount"`
+	Description string     `json:"description"`
+	Source      string     `json:"source,omitempty"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
 }
 
 func (dto *TransactionDTO) IsValid() bool {
 	return dto.Description != "" &&
 		dto.Amount != 0 &&
-		dto.MsgID != 0
+		dto.MsgID != 0 &&
+		dto.CreatedAt != nil
 }
 func (dto *TransactionDTO) ToTransaction() *Transaction {
 	txn := Transaction{
@@ -46,6 +47,7 @@ func (dto *TransactionDTO) ToTransaction() *Transaction {
 		Amount:      dto.Amount,
 		Description: dto.Description,
 		Source:      dto.Source,
+		CreatedAt:   *dto.CreatedAt,
 	}
 
 	objectID, err := primitive.ObjectIDFromHex(dto.ID)

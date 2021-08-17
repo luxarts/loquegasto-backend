@@ -27,7 +27,6 @@ func NewTransactionsRepository(client *mongo.Client) TransactionsRepository {
 }
 
 func (r *transactionsRepository) Create(transaction *domain.Transaction) (*domain.Transaction, error) {
-	transaction.CreatedAt = time.Now().UTC()
 	transactionBson, err := bson.Marshal(transaction)
 	if err != nil {
 		return nil, jsend.NewError("marshal-error", err)
