@@ -2,7 +2,8 @@ package defines
 
 const (
 	// Transactions
-	EndpointTransactionsCreate = "/transaction"
+	EndpointTransactionsCreate   = "/transaction"
+	EndpointTransactionsGetTotal = "/transactions/total"
 
 	EndpointPing = "/ping"
 )

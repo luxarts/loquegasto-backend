@@ -61,3 +61,7 @@ func (dto *TransactionDTO) ToTransaction() *Transaction {
 
 	return &txn
 }
+
+type TotalDTO struct {
+	Total float64 `json:"total"`
+}

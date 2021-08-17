@@ -14,6 +14,7 @@ import (
 
 type TransactionsRepository interface {
 	Create(transaction *domain.Transaction) (*domain.Transaction, error)
+	GetAllByUserID(userID int) (*[]domain.Transaction, error)
 }
 
 type transactionsRepository struct {
@@ -44,4 +45,20 @@ func (r *transactionsRepository) Create(transaction *domain.Transaction) (*domai
 	transaction.ID = &txnID
 
 	return transaction, nil
+}
+func (r *transactionsRepository) GetAllByUserID(userID int) (*[]domain.Transaction, error) {
+	ctx, cancelCtx := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancelCtx()
+
+	cursor, err := r.collection.Find(ctx, primitive.M{"user_id": userID})
+	if err != nil {
+		return nil, jsend.NewError("find-error", err)
+	}
+	var results []domain.Transaction
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		return nil, jsend.NewError("all-error", err)
+	}
+
+	return &results, nil
 }

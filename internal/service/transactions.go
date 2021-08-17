@@ -7,6 +7,7 @@ import (
 
 type TransactionsService interface {
 	Create(transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error)
+	GetTotal(userID int) (*domain.TotalDTO, error)
 }
 
 type transactionsService struct {
@@ -30,4 +31,22 @@ func (s *transactionsService) Create(transactionDTO *domain.TransactionDTO) (*do
 	response := transaction.ToDTO()
 
 	return response, nil
+}
+func (s *transactionsService) GetTotal(userID int) (*domain.TotalDTO, error) {
+	transactions, err := s.repo.GetAllByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var total float64
+
+	for _, txn := range *transactions {
+		total += txn.Amount
+	}
+
+	totalDTO := domain.TotalDTO{
+		Total: total,
+	}
+
+	return &totalDTO, nil
 }

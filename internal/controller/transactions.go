@@ -12,6 +12,7 @@ import (
 
 type TransactionsController interface {
 	Create(ctx *gin.Context)
+	GetTotal(ctx *gin.Context)
 }
 
 type transactionsController struct {
@@ -54,4 +55,20 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
+}
+func (c *transactionsController) GetTotal(ctx *gin.Context) {
+	// Get userID from token
+	bearerToken := ctx.GetHeader("Authorization")
+	userID, err := jwt.GetSubject(bearerToken)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+	}
+
+	response, err := c.srv.GetTotal(userID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
