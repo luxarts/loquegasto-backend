@@ -7,6 +7,7 @@ import (
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/utils/base64"
 	"os"
+	"strings"
 )
 
 type Header struct {
@@ -15,7 +16,7 @@ type Header struct {
 }
 
 type Payload struct {
-	Subject string `json:"sub"`
+	Subject int `json:"sub"`
 }
 
 func GenerateToken(header *Header, payload *Payload) string {
@@ -51,4 +52,17 @@ func Verify(header string, payload string, signature string) bool {
 	signatureGenerated := generateSignature(header, payload)
 
 	return signatureGenerated == signature
+}
+
+func GetSubject(token string) (int, error) {
+	payload := strings.Split(token, ".")[1]
+	payloadDecoded := base64.Decode(payload)
+
+	var p Payload
+	err := json.Unmarshal(payloadDecoded, &p)
+	if err != nil {
+		return 0, err
+	}
+
+	return p.Subject, nil
 }

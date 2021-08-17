@@ -1,11 +1,13 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/luxarts/jsend-go"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/service"
+	"loquegasto-backend/internal/utils/jwt"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/luxarts/jsend-go"
 )
 
 type TransactionsController interface {
@@ -30,10 +32,19 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 		return
 	}
 
-	if !body.IsValid(){
+	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
 		return
 	}
+
+	// Get userID from token
+	bearerToken := ctx.GetHeader("Authorization")
+	userID, err := jwt.GetSubject(bearerToken)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+	}
+
+	body.UserID = userID
 
 	response, err := c.srv.Create(&body)
 

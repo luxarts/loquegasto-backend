@@ -49,7 +49,7 @@ func mapRoutes(r *gin.Engine) {
 	r.GET(defines.EndpointPing, healthCheck)
 }
 
-func initMongoClient(uri string) *mongo.Client{
+func initMongoClient(uri string) *mongo.Client {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
