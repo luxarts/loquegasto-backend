@@ -10,9 +10,6 @@ import (
 
 type TransactionsController interface {
 	Create(ctx *gin.Context)
-	GetByID(ctx *gin.Context)
-	UpdateByID(ctx *gin.Context)
-	DeleteByID(ctx *gin.Context)
 }
 
 type transactionsController struct {
@@ -46,13 +43,4 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
-}
-func (c *transactionsController) GetByID(ctx *gin.Context) {
-
-}
-func (c *transactionsController) UpdateByID(ctx *gin.Context) {
-
-}
-func (c *transactionsController) DeleteByID(ctx *gin.Context) {
-
 }

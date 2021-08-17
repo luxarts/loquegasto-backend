@@ -10,6 +10,7 @@ import (
 	"log"
 	"loquegasto-backend/internal/controller"
 	"loquegasto-backend/internal/defines"
+	"loquegasto-backend/internal/middleware"
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/service"
 	"net/http"
@@ -38,11 +39,11 @@ func mapRoutes(r *gin.Engine) {
 	// Controllers init
 	txnCtrl := controller.NewTransactionsController(txnSrv)
 
+	// Middleware
+	authMw := middleware.NewAuthMiddleware()
+
 	// Endpoints
-	r.POST(defines.EndpointTransactionsCreate, txnCtrl.Create)
-	r.GET(defines.EndpointTransactionsGetByID, txnCtrl.GetByID)
-	r.PUT(defines.EndpointTransactionsUpdateByID, txnCtrl.UpdateByID)
-	r.DELETE(defines.EndpointTransactionsDeleteByID, txnCtrl.DeleteByID)
+	r.POST(defines.EndpointTransactionsCreate, authMw.Check, txnCtrl.Create)
 
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)
