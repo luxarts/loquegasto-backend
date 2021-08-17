@@ -10,7 +10,7 @@ type Transaction struct {
 	ID          *primitive.ObjectID `bson:"_id,omitempty"`
 	MsgID       int                 `bson:"msg_id"`
 	UserID      int                 `bson:"user_id"`
-	Amount      int64               `bson:"amount"`
+	Amount      float64             `bson:"amount"`
 	Description string              `bson:"description"`
 	Source      string              `bson:"source,omitempty"`
 	CreatedAt   time.Time           `bson:"created_at"`
@@ -31,8 +31,8 @@ func (txn *Transaction) ToDTO() *TransactionDTO {
 type TransactionDTO struct {
 	ID          string     `json:"id,omitempty"`
 	MsgID       int        `json:"msg_id"`
-	UserID      int        `json:"user_id"`
-	Amount      int64      `json:"amount"`
+	UserID      int        `json:"user_id,omitempty"`
+	Amount      float64    `json:"amount"`
 	Description string     `json:"description"`
 	Source      string     `json:"source,omitempty"`
 	CreatedAt   *time.Time `json:"created_at,omitempty"`
