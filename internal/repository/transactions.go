@@ -15,6 +15,7 @@ import (
 type TransactionsRepository interface {
 	Create(transaction *domain.Transaction) (*domain.Transaction, error)
 	GetAllByUserID(userID int) (*[]domain.Transaction, error)
+	UpdateByMsgID(msgID int, transaction *domain.Transaction) (*domain.Transaction, error)
 }
 
 type transactionsRepository struct {
@@ -61,4 +62,28 @@ func (r *transactionsRepository) GetAllByUserID(userID int) (*[]domain.Transacti
 	}
 
 	return &results, nil
+}
+func (r *transactionsRepository) UpdateByMsgID(msgID int, transaction *domain.Transaction) (*domain.Transaction, error) {
+	ctx, cancelCtx := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancelCtx()
+
+	update := bson.D{
+		{"$set", bson.D{
+			{"amount", transaction.Amount},
+			{"description", transaction.Description},
+			{"source", transaction.Source},
+		},
+		},
+	}
+
+	res, err := r.collection.UpdateOne(ctx, bson.M{"msg_id": msgID}, update)
+	if err != nil {
+		return nil, jsend.NewError("replaceone-error", err)
+	}
+
+	if res.MatchedCount != 1 {
+		return nil, jsend.NewFail("not found")
+	}
+
+	return transaction, nil
 }

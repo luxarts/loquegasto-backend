@@ -1,10 +1,12 @@
 package middleware
 
 import (
-	"github.com/luxarts/jsend-go"
+	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/utils/jwt"
 	"net/http"
 	"strings"
+
+	"github.com/luxarts/jsend-go"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,4 +48,14 @@ func (a *authMiddleware) Check(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusNotFound, jsend.NewFail("invalid signature"))
 		return
 	}
+
+	// Set userID in context
+	userID, err := jwt.GetSubject(bearerToken)
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, jsend.NewError("getsubject-error", err))
+		return
+	}
+
+	c.Set(defines.ParamUserID, userID)
 }

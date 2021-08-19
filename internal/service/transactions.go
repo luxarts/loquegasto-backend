@@ -8,6 +8,7 @@ import (
 type TransactionsService interface {
 	Create(transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error)
 	GetTotal(userID int) (*domain.TotalDTO, error)
+	UpdateByMsgID(userID int, msgID int, transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error)
 }
 
 type transactionsService struct {
@@ -49,4 +50,18 @@ func (s *transactionsService) GetTotal(userID int) (*domain.TotalDTO, error) {
 	}
 
 	return &totalDTO, nil
+}
+func (s *transactionsService) UpdateByMsgID(userID int, msgID int, transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error) {
+	transactionDTO.UserID = userID
+
+	transaction := transactionDTO.ToTransaction()
+
+	transaction, err := s.repo.UpdateByMsgID(msgID, transaction)
+	if err != nil {
+		return nil, err
+	}
+
+	response := transaction.ToDTO()
+
+	return response, nil
 }

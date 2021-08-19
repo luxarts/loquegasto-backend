@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/service"
-	"loquegasto-backend/internal/utils/jwt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/luxarts/jsend-go"
@@ -13,6 +14,7 @@ import (
 type TransactionsController interface {
 	Create(ctx *gin.Context)
 	GetTotal(ctx *gin.Context)
+	UpdateByMsgID(ctx *gin.Context)
 }
 
 type transactionsController struct {
@@ -38,14 +40,7 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 		return
 	}
 
-	// Get userID from token
-	bearerToken := ctx.GetHeader("Authorization")
-	userID, err := jwt.GetSubject(bearerToken)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
-	}
-
-	body.UserID = userID
+	body.UserID = ctx.GetInt(defines.ParamUserID)
 
 	response, err := c.srv.Create(&body)
 
@@ -57,14 +52,38 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
 }
 func (c *transactionsController) GetTotal(ctx *gin.Context) {
-	// Get userID from token
-	bearerToken := ctx.GetHeader("Authorization")
-	userID, err := jwt.GetSubject(bearerToken)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
-	}
+	userID := ctx.GetInt(defines.ParamUserID)
 
 	response, err := c.srv.GetTotal(userID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
+}
+func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
+	userID := ctx.GetInt(defines.ParamUserID)
+	msgIDStr := ctx.Param(defines.ParamMsgID)
+	msgID, err := strconv.Atoi(msgIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid message ID"))
+		return
+	}
+
+	var body domain.TransactionDTO
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
+		return
+	}
+
+	if !body.IsValidForUpdate() {
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		return
+	}
+
+	response, err := c.srv.UpdateByMsgID(userID, msgID, &body)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
