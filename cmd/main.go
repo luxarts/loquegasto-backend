@@ -1,14 +1,13 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
 	"log"
 	"loquegasto-backend/internal/router"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	_ = godotenv.Load()
-
 	r := router.New()
 
 	if err := r.Run(); err != nil {
