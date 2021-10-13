@@ -2,10 +2,13 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
+	"os"
 	"time"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/luxarts/jsend-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,6 +21,7 @@ type TransactionsRepository interface {
 	UpdateByMsgID(msgID int, transaction *domain.Transaction) (*domain.Transaction, error)
 }
 
+// MongoDB
 type transactionsRepository struct {
 	collection *mongo.Collection
 }
@@ -27,7 +31,6 @@ func NewTransactionsRepository(client *mongo.Client) TransactionsRepository {
 		collection: client.Database(defines.MongoDatabase).Collection(defines.MongoTransactionsCollection),
 	}
 }
-
 func (r *transactionsRepository) Create(transaction *domain.Transaction) (*domain.Transaction, error) {
 	transactionBson, err := bson.Marshal(transaction)
 	if err != nil {
@@ -86,4 +89,32 @@ func (r *transactionsRepository) UpdateByMsgID(msgID int, transaction *domain.Tr
 	}
 
 	return transaction, nil
+}
+
+// PostgreSQL
+type transactionsRepositoryPostgreSQL struct {
+	conn *pgx.Conn
+}
+
+func NewTransactionsRepositoryPostgreSQL(ctx context.Context) TransactionsRepository {
+	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	if err != nil {
+		panic(fmt.Sprintf("Fail to connect to database: %v", err))
+	}
+
+	return &transactionsRepositoryPostgreSQL{
+		conn: conn,
+	}
+}
+func (r *transactionsRepositoryPostgreSQL) Create(transaction *domain.Transaction) (*domain.Transaction, error) {
+	query := ""
+	r.conn.QueryRow(context.Background(), query)
+
+	return transaction, nil
+}
+func (r *transactionsRepositoryPostgreSQL) GetAllByUserID(userID int) (*[]domain.Transaction, error) {
+	return nil, nil
+}
+func (r *transactionsRepositoryPostgreSQL) UpdateByMsgID(msgID int, transaction *domain.Transaction) (*domain.Transaction, error) {
+	return nil, nil
 }
