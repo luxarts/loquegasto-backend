@@ -9,7 +9,6 @@ import (
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/service"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,10 +28,9 @@ func New() *gin.Engine {
 
 func mapRoutes(r *gin.Engine) {
 	// DB connectors, rest clients, and other stuff init
-	mongoClient := initMongoClient(os.Getenv(defines.EnvMongoDBURI))
 
 	// Repositories init
-	txnRepo := repository.NewTransactionsRepository(mongoClient)
+	txnRepo := repository.NewTransactionsRepository()
 
 	// Services init
 	txnSrv := service.NewTransactionsService(txnRepo)

@@ -2,32 +2,27 @@ package domain
 
 import (
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Transaction struct {
-	ID          *primitive.ObjectID `bson:"_id,omitempty"`
-	MsgID       int                 `bson:"msg_id,omitempty"`
-	UserID      int                 `bson:"user_id,omitempty"`
-	Amount      float64             `bson:"amount,omitempty"`
-	Description string              `bson:"description,omitempty"`
-	Source      string              `bson:"source,omitempty"`
-	CreatedAt   *time.Time          `bson:"created_at,omitempty"`
+	ID          string
+	UserID      int
+	MsgID       int
+	Amount      float64
+	Description string
+	AccountID   int
+	CreatedAt   *time.Time
 }
 
 func (txn *Transaction) ToDTO() *TransactionDTO {
 	dto := TransactionDTO{
+		ID:          txn.ID,
 		MsgID:       txn.MsgID,
 		UserID:      txn.UserID,
 		Amount:      txn.Amount,
 		Description: txn.Description,
-		Source:      txn.Source,
+		AccountID:   txn.AccountID,
 		CreatedAt:   txn.CreatedAt,
-	}
-
-	if txn.ID != nil {
-		dto.ID = txn.ID.Hex()
 	}
 
 	return &dto
@@ -39,7 +34,7 @@ type TransactionDTO struct {
 	UserID      int        `json:"user_id,omitempty"`
 	Amount      float64    `json:"amount"`
 	Description string     `json:"description"`
-	Source      string     `json:"source,omitempty"`
+	AccountID   int        `json:"account_id,omitempty"`
 	CreatedAt   *time.Time `json:"created_at,omitempty"`
 }
 
@@ -57,17 +52,13 @@ func (dto *TransactionDTO) IsValidForUpdate() bool {
 
 func (dto *TransactionDTO) ToTransaction() *Transaction {
 	txn := Transaction{
+		ID:          dto.ID,
 		MsgID:       dto.MsgID,
 		Amount:      dto.Amount,
 		UserID:      dto.UserID,
 		Description: dto.Description,
-		Source:      dto.Source,
+		AccountID:   dto.AccountID,
 		CreatedAt:   dto.CreatedAt,
-	}
-
-	objectID, err := primitive.ObjectIDFromHex(dto.ID)
-	if err == nil {
-		txn.ID = &objectID
 	}
 
 	return &txn
