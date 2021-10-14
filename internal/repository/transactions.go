@@ -3,7 +3,10 @@ package repository
 import (
 	"fmt"
 	"loquegasto-backend/internal/domain"
+	"net/http"
 	"os"
+
+	"github.com/luxarts/jsend-go"
 
 	"github.com/jmoiron/sqlx"
 
@@ -54,7 +57,7 @@ func (r *transactionsRepositoryPostgreSQL) Create(transaction *domain.Transactio
 
 	err := query.QueryRow().Scan(&id)
 	if err != nil {
-		return nil, fmt.Errorf("failed QueryRow: %w", err)
+		return nil, jsend.NewError("failed QueryRow", err, http.StatusInternalServerError)
 	}
 
 	transaction.ID = id
@@ -62,5 +65,20 @@ func (r *transactionsRepositoryPostgreSQL) Create(transaction *domain.Transactio
 	return transaction, nil
 }
 func (r *transactionsRepositoryPostgreSQL) UpdateByMsgID(msgID int, transaction *domain.Transaction) (*domain.Transaction, error) {
-	return nil, nil
+	var id string
+
+	query := sq.Update("backend.transactions").
+		Set("amount", transaction.Amount).
+		Set("description", transaction.Description).
+		Set("account_id", transaction.AccountID).
+		Where(sq.Eq{"msg_id": msgID}).
+		Suffix("RETURNING \"uuid\"").
+		RunWith(r.db).
+		PlaceholderFormat(sq.Dollar)
+
+	err := query.QueryRow().Scan(&id)
+	if err != nil {
+		return nil, jsend.NewError("failed QueryRow", err, http.StatusInternalServerError)
+	}
+	return transaction, nil
 }
