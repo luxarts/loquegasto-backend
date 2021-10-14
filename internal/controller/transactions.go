@@ -14,6 +14,7 @@ import (
 type TransactionsController interface {
 	Create(ctx *gin.Context)
 	UpdateByMsgID(ctx *gin.Context)
+	GetAllByUserID(ctx *gin.Context)
 }
 
 type transactionsController struct {
@@ -71,6 +72,18 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 	}
 
 	response, err := c.srv.UpdateByMsgID(userID, msgID, &body)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
+}
+func (c *transactionsController) GetAllByUserID(ctx *gin.Context) {
+	userID := ctx.GetInt(defines.ParamUserID)
+
+	response, err := c.srv.GetAllByUserID(userID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)

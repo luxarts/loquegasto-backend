@@ -1,7 +1,6 @@
 package defines
 
 const (
-	EnvMongoDBURI = "MONGODB_URI"
-
-	EnvJWTSecret = "JWT_SECRET"
+	EnvPostgreSQLDBURI = "DATABASE_URL"
+	EnvJWTSecret       = "JWT_SECRET"
 )
