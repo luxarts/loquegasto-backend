@@ -14,7 +14,6 @@ import (
 
 type TransactionsRepository interface {
 	Create(transaction *domain.Transaction) (*domain.Transaction, error)
-	GetAllByUserID(userID int) (*[]domain.Transaction, error)
 	UpdateByMsgID(msgID int, transaction *domain.Transaction) (*domain.Transaction, error)
 }
 
@@ -26,6 +25,11 @@ func NewTransactionsRepository() TransactionsRepository {
 	db, err := sqlx.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		panic(fmt.Sprintf("Fail to connect to database: %v", err))
+	}
+
+	err = db.Ping()
+	if err != nil {
+		panic(fmt.Sprintf("Fail to ping to database: %v", err))
 	}
 
 	return &transactionsRepositoryPostgreSQL{
@@ -56,9 +60,6 @@ func (r *transactionsRepositoryPostgreSQL) Create(transaction *domain.Transactio
 	transaction.ID = id
 
 	return transaction, nil
-}
-func (r *transactionsRepositoryPostgreSQL) GetAllByUserID(userID int) (*[]domain.Transaction, error) {
-	return nil, nil
 }
 func (r *transactionsRepositoryPostgreSQL) UpdateByMsgID(msgID int, transaction *domain.Transaction) (*domain.Transaction, error) {
 	return nil, nil

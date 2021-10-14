@@ -13,7 +13,6 @@ import (
 
 type TransactionsController interface {
 	Create(ctx *gin.Context)
-	GetTotal(ctx *gin.Context)
 	UpdateByMsgID(ctx *gin.Context)
 }
 
@@ -50,17 +49,6 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
-}
-func (c *transactionsController) GetTotal(ctx *gin.Context) {
-	userID := ctx.GetInt(defines.ParamUserID)
-
-	response, err := c.srv.GetTotal(userID)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
 func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
