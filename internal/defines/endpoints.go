@@ -6,5 +6,8 @@ const (
 	EndpointTransactionsUpdateByMsgID  = "/transactions/:" + ParamMsgID
 	EndpointTransactionsGetAllByUserID = "/transactions"
 
+	// Users
+	EndpointUsersCreate = "/user"
+
 	EndpointPing = "/ping"
 )

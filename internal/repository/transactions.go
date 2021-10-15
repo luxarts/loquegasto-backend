@@ -1,11 +1,8 @@
 package repository
 
 import (
-	"fmt"
-	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"net/http"
-	"os"
 
 	"github.com/luxarts/jsend-go"
 
@@ -30,17 +27,7 @@ type transactionsRepository struct {
 	db *sqlx.DB
 }
 
-func NewTransactionsRepository() TransactionsRepository {
-	db, err := sqlx.Open("postgres", os.Getenv(defines.EnvPostgreSQLDBURI))
-	if err != nil {
-		panic(fmt.Sprintf("Fail to connect to database: %v", err))
-	}
-
-	err = db.Ping()
-	if err != nil {
-		panic(fmt.Sprintf("Fail to ping to database: %v", err))
-	}
-
+func NewTransactionsRepository(db *sqlx.DB) TransactionsRepository {
 	return &transactionsRepository{
 		db: db,
 	}
