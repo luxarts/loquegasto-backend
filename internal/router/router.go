@@ -1,12 +1,16 @@
 package router
 
 import (
+	"fmt"
 	"loquegasto-backend/internal/controller"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/middleware"
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/service"
 	"net/http"
+	"os"
+
+	"github.com/jmoiron/sqlx"
 
 	"github.com/gin-gonic/gin"
 	"github.com/luxarts/jsend-go"
@@ -22,23 +26,37 @@ func New() *gin.Engine {
 
 func mapRoutes(r *gin.Engine) {
 	// DB connectors, rest clients, and other stuff init
+	db, err := sqlx.Open("postgres", os.Getenv(defines.EnvPostgreSQLDBURI))
+	if err != nil {
+		panic(fmt.Sprintf("Fail to connect to database: %v", err))
+	}
+
+	if err := db.Ping(); err != nil {
+		panic(fmt.Sprintf("Fail to ping to database: %v", err))
+	}
 
 	// Repositories init
-	txnRepo := repository.NewTransactionsRepository()
+	txnRepo := repository.NewTransactionsRepository(db)
+	usersRepo := repository.NewUsersRepository(db)
 
 	// Services init
 	txnSrv := service.NewTransactionsService(txnRepo)
+	usersSrv := service.NewUsersService(usersRepo)
 
 	// Controllers init
 	txnCtrl := controller.NewTransactionsController(txnSrv)
+	usersCtrl := controller.NewUsersController(usersSrv)
 
 	// Middleware
 	authMw := middleware.NewAuthMiddleware()
 
 	// Endpoints
+	// Transactions
 	r.POST(defines.EndpointTransactionsCreate, authMw.Check, txnCtrl.Create)
 	r.PUT(defines.EndpointTransactionsUpdateByMsgID, authMw.Check, txnCtrl.UpdateByMsgID)
 	r.GET(defines.EndpointTransactionsGetAllByUserID, authMw.Check, txnCtrl.GetAllByUserID)
+	// Users
+	r.POST(defines.EndpointUsersCreate, authMw.Check, usersCtrl.Create)
 
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)
