@@ -16,6 +16,7 @@ type AccountsController interface {
 	GetByName(ctx *gin.Context)
 	GetByID(ctx *gin.Context)
 	UpdateByID(ctx *gin.Context)
+	DeleteByID(ctx *gin.Context)
 }
 type accountsController struct {
 	srv service.AccountsService
@@ -103,4 +104,22 @@ func (c *accountsController) UpdateByID(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
+}
+func (c *accountsController) DeleteByID(ctx *gin.Context) {
+	idStr := ctx.Param(defines.ParamID)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, jsend.NewError("atoi-error", err))
+		return
+	}
+	userID := ctx.GetInt(defines.ParamUserID)
+
+	err = c.srv.Delete(id, userID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, jsend.NewSuccess(nil))
 }

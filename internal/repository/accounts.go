@@ -19,6 +19,7 @@ type AccountRepository interface {
 	GetAllByUserID(userID int) (*[]domain.Account, error)
 	GetByID(id int) (*domain.Account, error)
 	Update(account *domain.Account) (*domain.Account, error)
+	Delete(id int, userID int) error
 }
 type accountRepository struct {
 	db *sqlx.DB
@@ -30,7 +31,7 @@ func NewAccountRepository(db *sqlx.DB) AccountRepository {
 	}
 }
 func (r *accountRepository) Create(account *domain.Account) (*domain.Account, error) {
-	query := sq.Insert(tableAccounts).Columns("user_id", "name", "balance", "updated_at").
+	query := sq.Insert(tableAccounts).Columns("user_id", "name", "balance", "created_at").
 		Values(
 			account.UserID,
 			account.Name,
@@ -112,4 +113,20 @@ func (r *accountRepository) Update(account *domain.Account) (*domain.Account, er
 		return nil, jsend.NewError("failed QueryRowx", err, http.StatusInternalServerError)
 	}
 	return account, nil
+}
+func (r *accountRepository) Delete(id int, userID int) error {
+	query, args, err := sq.Delete(tableAccounts).
+		Where(sq.Eq{"id": id, "user_id": userID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return jsend.NewError("failed ToSql", err, http.StatusInternalServerError)
+	}
+
+	err = r.db.QueryRowx(query, args...).Err()
+	if err != nil {
+		return jsend.NewError("failed QueryRowx", err, http.StatusInternalServerError)
+	}
+	return nil
 }

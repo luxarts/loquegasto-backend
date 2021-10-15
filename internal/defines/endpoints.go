@@ -16,4 +16,5 @@ const (
 	EndpointAccountsGetByName  = "/accounts"
 	EndpointAccountsGetByID    = "/accounts/:id"
 	EndpointAccountsUpdateByID = "/accounts/:id"
+	EndpointAccountsDeleteByID = "/accounts/:id"
 )

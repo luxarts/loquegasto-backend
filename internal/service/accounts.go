@@ -19,6 +19,7 @@ type AccountsService interface {
 	GetByName(userID int, name string) (*domain.AccountDTO, error)
 	GetByID(userID int, id int) (*domain.AccountDTO, error)
 	UpdateByID(accountDTO *domain.AccountDTO) (*domain.AccountDTO, error)
+	Delete(id int, userID int) error
 }
 type accountsService struct {
 	repo repository.AccountRepository
@@ -76,6 +77,9 @@ func (s *accountsService) UpdateByID(accountDTO *domain.AccountDTO) (*domain.Acc
 	}
 
 	return account.ToDTO(), nil
+}
+func (s *accountsService) Delete(id int, userID int) error {
+	return s.repo.Delete(id, userID)
 }
 
 // Utils

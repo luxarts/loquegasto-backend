@@ -16,7 +16,7 @@ type AccountDTO struct {
 	UserID    int        `json:"userID"`
 	Name      string     `json:"name,omitempty"`
 	Balance   float64    `json:"balance"`
-	CreatedAt *time.Time `json:"updated_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 func (a *Account) ToDTO() *AccountDTO {
