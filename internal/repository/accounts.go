@@ -17,6 +17,8 @@ const (
 type AccountRepository interface {
 	Create(account *domain.Account) (*domain.Account, error)
 	GetAllByUserID(userID int) (*[]domain.Account, error)
+	GetByID(id int) (*domain.Account, error)
+	Update(account *domain.Account) (*domain.Account, error)
 }
 type accountRepository struct {
 	db *sqlx.DB
@@ -33,7 +35,7 @@ func (r *accountRepository) Create(account *domain.Account) (*domain.Account, er
 			account.UserID,
 			account.Name,
 			account.Balance,
-			account.UpdatedAt).
+			account.CreatedAt).
 		Suffix("RETURNING \"id\"").
 		RunWith(r.db).
 		PlaceholderFormat(sq.Dollar)
@@ -60,7 +62,7 @@ func (r *accountRepository) GetAllByUserID(userID int) (*[]domain.Account, error
 	var results []domain.Account
 	for rows.Next() {
 		var a domain.Account
-		if err := rows.Scan(&a.ID, &a.UserID, &a.Name, &a.Balance, &a.UpdatedAt); err != nil {
+		if err := rows.Scan(&a.ID, &a.UserID, &a.Name, &a.Balance, &a.CreatedAt); err != nil {
 			return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
 		}
 		results = append(results, a)
@@ -70,4 +72,44 @@ func (r *accountRepository) GetAllByUserID(userID int) (*[]domain.Account, error
 	}
 
 	return &results, nil
+}
+func (r *accountRepository) GetByID(id int) (*domain.Account, error) {
+	query, args, err := sq.Select("*").
+		From(tableAccounts).
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, jsend.NewError("failed ToSql", err, http.StatusInternalServerError)
+	}
+
+	var account domain.Account
+	err = r.db.QueryRowx(query, args...).StructScan(&account)
+	if err != nil {
+		return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
+	}
+
+	return &account, nil
+}
+func (r *accountRepository) Update(account *domain.Account) (*domain.Account, error) {
+	query, args, err := sq.Update(tableAccounts).
+		Set("id", account.ID).
+		Set("user_id", account.UserID).
+		Set("name", account.Name).
+		Set("balance", account.Balance).
+		Set("created_at", account.CreatedAt).
+		Where(sq.Eq{"id": account.ID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, jsend.NewError("failed ToSql", err, http.StatusInternalServerError)
+	}
+
+	err = r.db.QueryRowx(query, args...).Err()
+	if err != nil {
+		return nil, jsend.NewError("failed QueryRowx", err, http.StatusInternalServerError)
+	}
+	return account, nil
 }

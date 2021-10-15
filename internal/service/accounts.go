@@ -3,8 +3,11 @@ package service
 import (
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/repository"
+	"net/http"
 	"strings"
 	"unicode"
+
+	"github.com/luxarts/jsend-go"
 
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
@@ -14,6 +17,8 @@ import (
 type AccountsService interface {
 	Create(accountDTO *domain.AccountDTO) (*domain.AccountDTO, error)
 	GetByName(userID int, name string) (*domain.AccountDTO, error)
+	GetByID(userID int, id int) (*domain.AccountDTO, error)
+	UpdateByID(accountDTO *domain.AccountDTO) (*domain.AccountDTO, error)
 }
 type accountsService struct {
 	repo repository.AccountRepository
@@ -49,6 +54,28 @@ func (s *accountsService) GetByName(userID int, name string) (*domain.AccountDTO
 	}
 
 	return nil, nil
+}
+func (s *accountsService) GetByID(userID int, id int) (*domain.AccountDTO, error) {
+	account, err := s.repo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if account.UserID != userID {
+		return nil, jsend.NewError("forbidden", nil, http.StatusForbidden)
+	}
+
+	return account.ToDTO(), nil
+}
+func (s *accountsService) UpdateByID(accountDTO *domain.AccountDTO) (*domain.AccountDTO, error) {
+	account := accountDTO.ToAccount()
+
+	account, err := s.repo.Update(account)
+	if err != nil {
+		return nil, err
+	}
+
+	return account.ToDTO(), nil
 }
 
 // Utils

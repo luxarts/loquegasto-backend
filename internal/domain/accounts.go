@@ -5,18 +5,18 @@ import (
 )
 
 type Account struct {
-	ID        int
-	UserID    int
-	Name      string
-	Balance   int64
-	UpdatedAt *time.Time
+	ID        int        `db:"id"`
+	UserID    int        `db:"user_id"`
+	Name      string     `db:"name"`
+	Balance   int64      `db:"balance"`
+	CreatedAt *time.Time `db:"created_at"`
 }
 type AccountDTO struct {
 	ID        int        `json:"id"`
 	UserID    int        `json:"userID"`
-	Name      string     `json:"name"`
+	Name      string     `json:"name,omitempty"`
 	Balance   float64    `json:"balance"`
-	UpdatedAt *time.Time `json:"updated_at"`
+	CreatedAt *time.Time `json:"updated_at"`
 }
 
 func (a *Account) ToDTO() *AccountDTO {
@@ -25,7 +25,7 @@ func (a *Account) ToDTO() *AccountDTO {
 		UserID:    a.UserID,
 		Name:      a.Name,
 		Balance:   float64(a.Balance) / 100.0,
-		UpdatedAt: a.UpdatedAt,
+		CreatedAt: a.CreatedAt,
 	}
 }
 func (dto *AccountDTO) ToAccount() *Account {
@@ -34,11 +34,11 @@ func (dto *AccountDTO) ToAccount() *Account {
 		UserID:    dto.UserID,
 		Name:      dto.Name,
 		Balance:   int64(dto.Balance * 100),
-		UpdatedAt: dto.UpdatedAt,
+		CreatedAt: dto.CreatedAt,
 	}
 }
 func (dto *AccountDTO) IsValid() bool {
 	return dto.UserID != 0 &&
 		dto.Name != "" &&
-		dto.UpdatedAt != nil
+		dto.CreatedAt != nil
 }
