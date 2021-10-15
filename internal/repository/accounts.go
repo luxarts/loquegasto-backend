@@ -16,6 +16,7 @@ const (
 
 type AccountRepository interface {
 	Create(account *domain.Account) (*domain.Account, error)
+	GetAllByUserID(userID int) (*[]domain.Account, error)
 }
 type accountRepository struct {
 	db *sqlx.DB
@@ -43,4 +44,30 @@ func (r *accountRepository) Create(account *domain.Account) (*domain.Account, er
 	}
 
 	return account, nil
+}
+func (r *accountRepository) GetAllByUserID(userID int) (*[]domain.Account, error) {
+	query := sq.Select("*").
+		From(tableAccounts).
+		Where(sq.Eq{"user_id": userID}).
+		RunWith(r.db).
+		PlaceholderFormat(sq.Dollar)
+
+	rows, err := query.Query()
+	if err != nil {
+		return nil, jsend.NewError("failed Query", err, http.StatusInternalServerError)
+	}
+
+	var results []domain.Account
+	for rows.Next() {
+		var a domain.Account
+		if err := rows.Scan(&a.ID, &a.UserID, &a.Name, &a.Balance, &a.UpdatedAt); err != nil {
+			return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
+		}
+		results = append(results, a)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, jsend.NewError("failed Err", err, http.StatusInternalServerError)
+	}
+
+	return &results, nil
 }

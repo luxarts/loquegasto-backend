@@ -12,5 +12,6 @@ const (
 	EndpointUsersCreate = "/user"
 
 	// Account
-	EndpointAccountsCreate = "/account"
+	EndpointAccountsCreate    = "/account"
+	EndpointAccountsGetByName = "/accounts"
 )

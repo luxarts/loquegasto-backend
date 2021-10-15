@@ -62,6 +62,7 @@ func mapRoutes(r *gin.Engine) {
 	r.POST(defines.EndpointUsersCreate, authMw.Check, usersCtrl.Create)
 	// Accounts
 	r.POST(defines.EndpointAccountsCreate, authMw.Check, accountsCtrl.Create)
+	r.GET(defines.EndpointAccountsGetByName, authMw.Check, accountsCtrl.GetByName)
 
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)
