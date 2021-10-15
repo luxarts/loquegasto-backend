@@ -1,6 +1,8 @@
 package defines
 
 const (
+	EndpointPing = "/ping"
+
 	// Transactions
 	EndpointTransactionsCreate         = "/transaction"
 	EndpointTransactionsUpdateByMsgID  = "/transactions/:" + ParamMsgID
@@ -9,5 +11,6 @@ const (
 	// Users
 	EndpointUsersCreate = "/user"
 
-	EndpointPing = "/ping"
+	// Account
+	EndpointAccountsCreate = "/account"
 )
