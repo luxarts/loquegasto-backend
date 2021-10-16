@@ -11,46 +11,46 @@ import (
 )
 
 const (
-	tableAccounts = "backend.accounts"
+	tableWallets = "backend.wallets"
 )
 
-type AccountRepository interface {
-	Create(account *domain.Account) (*domain.Account, error)
-	GetAllByUserID(userID int) (*[]domain.Account, error)
-	GetByID(id int) (*domain.Account, error)
-	Update(account *domain.Account) (*domain.Account, error)
+type WalletRepository interface {
+	Create(account *domain.Wallet) (*domain.Wallet, error)
+	GetAllByUserID(userID int) (*[]domain.Wallet, error)
+	GetByID(id int) (*domain.Wallet, error)
+	Update(account *domain.Wallet) (*domain.Wallet, error)
 	Delete(id int, userID int) error
 }
-type accountRepository struct {
+type walletRepository struct {
 	db *sqlx.DB
 }
 
-func NewAccountRepository(db *sqlx.DB) AccountRepository {
-	return &accountRepository{
+func NewWalletRepository(db *sqlx.DB) WalletRepository {
+	return &walletRepository{
 		db: db,
 	}
 }
-func (r *accountRepository) Create(account *domain.Account) (*domain.Account, error) {
-	query := sq.Insert(tableAccounts).Columns("user_id", "name", "balance", "created_at").
+func (r *walletRepository) Create(wallet *domain.Wallet) (*domain.Wallet, error) {
+	query := sq.Insert(tableWallets).Columns("user_id", "name", "balance", "created_at").
 		Values(
-			account.UserID,
-			account.Name,
-			account.Balance,
-			account.CreatedAt).
+			wallet.UserID,
+			wallet.Name,
+			wallet.Balance,
+			wallet.CreatedAt).
 		Suffix("RETURNING \"id\"").
 		RunWith(r.db).
 		PlaceholderFormat(sq.Dollar)
 
-	err := query.QueryRow().Scan(&account.ID)
+	err := query.QueryRow().Scan(&wallet.ID)
 	if err != nil {
 		return nil, jsend.NewError("failed QueryRow", err, http.StatusInternalServerError)
 	}
 
-	return account, nil
+	return wallet, nil
 }
-func (r *accountRepository) GetAllByUserID(userID int) (*[]domain.Account, error) {
+func (r *walletRepository) GetAllByUserID(userID int) (*[]domain.Wallet, error) {
 	query, args, err := sq.Select("*").
-		From(tableAccounts).
+		From(tableWallets).
 		Where(sq.Eq{"user_id": userID}).
 		RunWith(r.db).
 		PlaceholderFormat(sq.Dollar).
@@ -65,13 +65,13 @@ func (r *accountRepository) GetAllByUserID(userID int) (*[]domain.Account, error
 		return nil, jsend.NewError("failed Query", err, http.StatusInternalServerError)
 	}
 
-	var results []domain.Account
+	var results []domain.Wallet
 	for rows.Next() {
-		var a domain.Account
-		if err := rows.StructScan(&a); err != nil {
+		var wallet domain.Wallet
+		if err := rows.StructScan(&wallet); err != nil {
 			return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
 		}
-		results = append(results, a)
+		results = append(results, wallet)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, jsend.NewError("failed Err", err, http.StatusInternalServerError)
@@ -79,9 +79,9 @@ func (r *accountRepository) GetAllByUserID(userID int) (*[]domain.Account, error
 
 	return &results, nil
 }
-func (r *accountRepository) GetByID(id int) (*domain.Account, error) {
+func (r *walletRepository) GetByID(id int) (*domain.Wallet, error) {
 	query, args, err := sq.Select("*").
-		From(tableAccounts).
+		From(tableWallets).
 		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -90,22 +90,22 @@ func (r *accountRepository) GetByID(id int) (*domain.Account, error) {
 		return nil, jsend.NewError("failed ToSql", err, http.StatusInternalServerError)
 	}
 
-	var account domain.Account
-	err = r.db.QueryRowx(query, args...).StructScan(&account)
+	var wallet domain.Wallet
+	err = r.db.QueryRowx(query, args...).StructScan(&wallet)
 	if err != nil {
 		return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
 	}
 
-	return &account, nil
+	return &wallet, nil
 }
-func (r *accountRepository) Update(account *domain.Account) (*domain.Account, error) {
-	query, args, err := sq.Update(tableAccounts).
-		Set("id", account.ID).
-		Set("user_id", account.UserID).
-		Set("name", account.Name).
-		Set("balance", account.Balance).
-		Set("created_at", account.CreatedAt).
-		Where(sq.Eq{"id": account.ID}).
+func (r *walletRepository) Update(wallet *domain.Wallet) (*domain.Wallet, error) {
+	query, args, err := sq.Update(tableWallets).
+		Set("id", wallet.ID).
+		Set("user_id", wallet.UserID).
+		Set("name", wallet.Name).
+		Set("balance", wallet.Balance).
+		Set("created_at", wallet.CreatedAt).
+		Where(sq.Eq{"id": wallet.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -117,10 +117,10 @@ func (r *accountRepository) Update(account *domain.Account) (*domain.Account, er
 	if err != nil {
 		return nil, jsend.NewError("failed QueryRowx", err, http.StatusInternalServerError)
 	}
-	return account, nil
+	return wallet, nil
 }
-func (r *accountRepository) Delete(id int, userID int) error {
-	query, args, err := sq.Delete(tableAccounts).
+func (r *walletRepository) Delete(id int, userID int) error {
+	query, args, err := sq.Delete(tableWallets).
 		Where(sq.Eq{"id": id, "user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

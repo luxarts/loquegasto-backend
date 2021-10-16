@@ -4,14 +4,14 @@ import (
 	"time"
 )
 
-type Account struct {
+type Wallet struct {
 	ID        int        `db:"id"`
 	UserID    int        `db:"user_id"`
 	Name      string     `db:"name"`
 	Balance   int64      `db:"balance"`
 	CreatedAt *time.Time `db:"created_at"`
 }
-type AccountDTO struct {
+type WalletDTO struct {
 	ID        int        `json:"id"`
 	UserID    int        `json:"userID"`
 	Name      string     `json:"name,omitempty"`
@@ -19,8 +19,8 @@ type AccountDTO struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (a *Account) ToDTO() *AccountDTO {
-	return &AccountDTO{
+func (a *Wallet) ToDTO() *WalletDTO {
+	return &WalletDTO{
 		ID:        a.ID,
 		UserID:    a.UserID,
 		Name:      a.Name,
@@ -28,8 +28,8 @@ func (a *Account) ToDTO() *AccountDTO {
 		CreatedAt: a.CreatedAt,
 	}
 }
-func (dto *AccountDTO) ToAccount() *Account {
-	return &Account{
+func (dto *WalletDTO) ToWallet() *Wallet {
+	return &Wallet{
 		ID:        dto.ID,
 		UserID:    dto.UserID,
 		Name:      dto.Name,
@@ -37,7 +37,7 @@ func (dto *AccountDTO) ToAccount() *Account {
 		CreatedAt: dto.CreatedAt,
 	}
 }
-func (dto *AccountDTO) IsValid() bool {
+func (dto *WalletDTO) IsValid() bool {
 	return dto.UserID != 0 &&
 		dto.Name != "" &&
 		dto.CreatedAt != nil

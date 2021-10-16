@@ -13,10 +13,10 @@ type TransactionsService interface {
 
 type transactionsService struct {
 	txnRepo repository.TransactionsRepository
-	accRepo repository.AccountRepository
+	accRepo repository.WalletRepository
 }
 
-func NewTransactionsService(txnRepo repository.TransactionsRepository, accRepo repository.AccountRepository) TransactionsService {
+func NewTransactionsService(txnRepo repository.TransactionsRepository, accRepo repository.WalletRepository) TransactionsService {
 	return &transactionsService{
 		txnRepo: txnRepo,
 		accRepo: accRepo,
@@ -32,7 +32,7 @@ func (s *transactionsService) Create(transactionDTO *domain.TransactionDTO) (*do
 	}
 
 	// Update balance
-	account, err := s.accRepo.GetByID(transaction.AccountID)
+	account, err := s.accRepo.GetByID(transaction.WalletID)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (s *transactionsService) UpdateByMsgID(userID int, msgID int, transactionDT
 	}
 
 	// Update balance
-	account, err := s.accRepo.GetByID(transaction.AccountID)
+	account, err := s.accRepo.GetByID(transaction.WalletID)
 	if err != nil {
 		return nil, err
 	}

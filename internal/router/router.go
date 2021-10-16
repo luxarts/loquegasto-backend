@@ -38,17 +38,17 @@ func mapRoutes(r *gin.Engine) {
 	// Repositories init
 	txnRepo := repository.NewTransactionsRepository(db)
 	usersRepo := repository.NewUsersRepository(db)
-	accountsRepo := repository.NewAccountRepository(db)
+	walletsRepo := repository.NewWalletRepository(db)
 
 	// Services init
-	txnSrv := service.NewTransactionsService(txnRepo, accountsRepo)
+	txnSrv := service.NewTransactionsService(txnRepo, walletsRepo)
 	usersSrv := service.NewUsersService(usersRepo)
-	accountsSrv := service.NewAccountsService(accountsRepo)
+	walletsSrv := service.NewWalletsService(walletsRepo)
 
 	// Controllers init
 	txnCtrl := controller.NewTransactionsController(txnSrv)
 	usersCtrl := controller.NewUsersController(usersSrv)
-	accountsCtrl := controller.NewAccountsController(accountsSrv)
+	walletsCtrl := controller.NewWalletsController(walletsSrv)
 
 	// Middleware
 	authMw := middleware.NewAuthMiddleware()
@@ -60,12 +60,12 @@ func mapRoutes(r *gin.Engine) {
 	r.GET(defines.EndpointTransactionsGetAllByUserID, authMw.Check, txnCtrl.GetAllByUserID)
 	// Users
 	r.POST(defines.EndpointUsersCreate, authMw.Check, usersCtrl.Create)
-	// Accounts
-	r.POST(defines.EndpointAccountsCreate, authMw.Check, accountsCtrl.Create)
-	r.GET(defines.EndpointAccountsGetAll, authMw.Check, accountsCtrl.GetAll)
-	r.GET(defines.EndpointAccountsGetByID, authMw.Check, accountsCtrl.GetByID)
-	r.PUT(defines.EndpointAccountsUpdateByID, authMw.Check, accountsCtrl.UpdateByID)
-	r.DELETE(defines.EndpointAccountsDeleteByID, authMw.Check, accountsCtrl.DeleteByID)
+	// Wallets
+	r.POST(defines.EndpointWalletsCreate, authMw.Check, walletsCtrl.Create)
+	r.GET(defines.EndpointWalletsGetAll, authMw.Check, walletsCtrl.GetAll)
+	r.GET(defines.EndpointWalletsGetByID, authMw.Check, walletsCtrl.GetByID)
+	r.PUT(defines.EndpointWalletsUpdateByID, authMw.Check, walletsCtrl.UpdateByID)
+	r.DELETE(defines.EndpointWalletsDeleteByID, authMw.Check, walletsCtrl.DeleteByID)
 
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)

@@ -11,10 +11,10 @@ const (
 	// Users
 	EndpointUsersCreate = "/user"
 
-	// Account
-	EndpointAccountsCreate     = "/account"
-	EndpointAccountsGetAll     = "/accounts"
-	EndpointAccountsGetByID    = "/accounts/:" + ParamID
-	EndpointAccountsUpdateByID = "/accounts/:" + ParamID
-	EndpointAccountsDeleteByID = "/accounts/:" + ParamID
+	// Wallets
+	EndpointWalletsCreate     = "/wallet"
+	EndpointWalletsGetAll     = "/wallets"
+	EndpointWalletsGetByID    = "/wallets/:" + ParamID
+	EndpointWalletsUpdateByID = "/wallets/:" + ParamID
+	EndpointWalletsDeleteByID = "/wallets/:" + ParamID
 )

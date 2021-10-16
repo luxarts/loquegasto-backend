@@ -42,7 +42,7 @@ func (r *transactionsRepository) Create(transaction *domain.Transaction) (*domai
 			transaction.MsgID,
 			transaction.Amount,
 			transaction.Description,
-			transaction.AccountID,
+			transaction.WalletID,
 			transaction.CreatedAt).
 		Suffix("RETURNING \"uuid\"").
 		RunWith(r.db).
@@ -63,7 +63,7 @@ func (r *transactionsRepository) UpdateByMsgID(msgID int, transaction *domain.Tr
 	query := sq.Update(tableTransactions).
 		Set("amount", transaction.Amount).
 		Set("description", transaction.Description).
-		Set("account_id", transaction.AccountID).
+		Set("account_id", transaction.WalletID).
 		Where(sq.Eq{"msg_id": msgID}).
 		Suffix("RETURNING \"uuid\"").
 		RunWith(r.db).
@@ -90,7 +90,7 @@ func (r *transactionsRepository) GetAllByUserID(userID int) (*[]domain.Transacti
 	var results []domain.Transaction
 	for rows.Next() {
 		var t domain.Transaction
-		if err := rows.Scan(&t.ID, &t.UserID, &t.MsgID, &t.Amount, &t.Description, &t.AccountID, &t.CreatedAt); err != nil {
+		if err := rows.Scan(&t.ID, &t.UserID, &t.MsgID, &t.Amount, &t.Description, &t.WalletID, &t.CreatedAt); err != nil {
 			return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
 		}
 		results = append(results, t)

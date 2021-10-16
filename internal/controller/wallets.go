@@ -11,7 +11,7 @@ import (
 	"github.com/luxarts/jsend-go"
 )
 
-type AccountsController interface {
+type WalletsController interface {
 	Create(ctx *gin.Context)
 	GetByName(ctx *gin.Context)
 	GetByID(ctx *gin.Context)
@@ -19,17 +19,17 @@ type AccountsController interface {
 	UpdateByID(ctx *gin.Context)
 	DeleteByID(ctx *gin.Context)
 }
-type accountsController struct {
-	srv service.AccountsService
+type walletsController struct {
+	srv service.WalletsService
 }
 
-func NewAccountsController(srv service.AccountsService) AccountsController {
-	return &accountsController{
+func NewWalletsController(srv service.WalletsService) WalletsController {
+	return &walletsController{
 		srv: srv,
 	}
 }
-func (c *accountsController) Create(ctx *gin.Context) {
-	var body domain.AccountDTO
+func (c *walletsController) Create(ctx *gin.Context) {
+	var body domain.WalletDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
@@ -52,7 +52,7 @@ func (c *accountsController) Create(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
 }
-func (c *accountsController) GetByName(ctx *gin.Context) {
+func (c *walletsController) GetByName(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
 	name := ctx.Query(defines.ParamName)
 
@@ -64,7 +64,7 @@ func (c *accountsController) GetByName(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
-func (c *accountsController) GetByID(ctx *gin.Context) {
+func (c *walletsController) GetByID(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
 	idStr := ctx.Param(defines.ParamID)
 	id, err := strconv.Atoi(idStr)
@@ -81,7 +81,7 @@ func (c *accountsController) GetByID(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
-func (c *accountsController) GetAll(ctx *gin.Context) {
+func (c *walletsController) GetAll(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
 	name := ctx.Query(defines.ParamName)
 
@@ -99,8 +99,8 @@ func (c *accountsController) GetAll(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
-func (c *accountsController) UpdateByID(ctx *gin.Context) {
-	var body domain.AccountDTO
+func (c *walletsController) UpdateByID(ctx *gin.Context) {
+	var body domain.WalletDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
@@ -124,7 +124,7 @@ func (c *accountsController) UpdateByID(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
-func (c *accountsController) DeleteByID(ctx *gin.Context) {
+func (c *walletsController) DeleteByID(ctx *gin.Context) {
 	idStr := ctx.Param(defines.ParamID)
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
