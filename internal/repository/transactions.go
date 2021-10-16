@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	tableName = "backend.transactions"
+	tableTransactions = "backend.transactions"
 )
 
 type TransactionsRepository interface {
@@ -35,7 +35,7 @@ func NewTransactionsRepository(db *sqlx.DB) TransactionsRepository {
 func (r *transactionsRepository) Create(transaction *domain.Transaction) (*domain.Transaction, error) {
 	id := uuid.NewString()
 
-	query := sq.Insert(tableName).Columns("uuid", "user_id", "msg_id", "amount", "description", "account_id", "created_at").
+	query := sq.Insert(tableTransactions).Columns("uuid", "user_id", "msg_id", "amount", "description", "account_id", "created_at").
 		Values(
 			id,
 			transaction.UserID,
@@ -60,7 +60,7 @@ func (r *transactionsRepository) Create(transaction *domain.Transaction) (*domai
 func (r *transactionsRepository) UpdateByMsgID(msgID int, transaction *domain.Transaction) (*domain.Transaction, error) {
 	var id string
 
-	query := sq.Update(tableName).
+	query := sq.Update(tableTransactions).
 		Set("amount", transaction.Amount).
 		Set("description", transaction.Description).
 		Set("account_id", transaction.AccountID).
@@ -77,7 +77,7 @@ func (r *transactionsRepository) UpdateByMsgID(msgID int, transaction *domain.Tr
 }
 func (r *transactionsRepository) GetAllByUserID(userID int) (*[]domain.Transaction, error) {
 	query := sq.Select("*").
-		From(tableName).
+		From(tableTransactions).
 		Where(sq.Eq{"user_id": userID}).
 		RunWith(r.db).
 		PlaceholderFormat(sq.Dollar)
