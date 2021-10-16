@@ -41,7 +41,7 @@ func mapRoutes(r *gin.Engine) {
 	accountsRepo := repository.NewAccountRepository(db)
 
 	// Services init
-	txnSrv := service.NewTransactionsService(txnRepo)
+	txnSrv := service.NewTransactionsService(txnRepo, accountsRepo)
 	usersSrv := service.NewUsersService(usersRepo)
 	accountsSrv := service.NewAccountsService(accountsRepo)
 

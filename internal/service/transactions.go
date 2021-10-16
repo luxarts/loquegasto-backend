@@ -12,19 +12,32 @@ type TransactionsService interface {
 }
 
 type transactionsService struct {
-	repo repository.TransactionsRepository
+	txnRepo repository.TransactionsRepository
+	accRepo repository.AccountRepository
 }
 
-func NewTransactionsService(repo repository.TransactionsRepository) TransactionsService {
+func NewTransactionsService(txnRepo repository.TransactionsRepository, accRepo repository.AccountRepository) TransactionsService {
 	return &transactionsService{
-		repo: repo,
+		txnRepo: txnRepo,
+		accRepo: accRepo,
 	}
 }
 
 func (s *transactionsService) Create(transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error) {
 	transaction := transactionDTO.ToTransaction()
 
-	transaction, err := s.repo.Create(transaction)
+	transaction, err := s.txnRepo.Create(transaction)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update balance
+	account, err := s.accRepo.GetByID(transaction.AccountID)
+	if err != nil {
+		return nil, err
+	}
+	account.Balance -= int64(transaction.Amount * 100)
+	account, err = s.accRepo.Update(account)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +51,18 @@ func (s *transactionsService) UpdateByMsgID(userID int, msgID int, transactionDT
 
 	transaction := transactionDTO.ToTransaction()
 
-	transaction, err := s.repo.UpdateByMsgID(msgID, transaction)
+	transaction, err := s.txnRepo.UpdateByMsgID(msgID, transaction)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update balance
+	account, err := s.accRepo.GetByID(transaction.AccountID)
+	if err != nil {
+		return nil, err
+	}
+	account.Balance -= int64(transaction.Amount * 100)
+	account, err = s.accRepo.Update(account)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +72,7 @@ func (s *transactionsService) UpdateByMsgID(userID int, msgID int, transactionDT
 	return response, nil
 }
 func (s *transactionsService) GetAllByUserID(userID int) (*[]domain.TransactionDTO, error) {
-	res, err := s.repo.GetAllByUserID(userID)
+	res, err := s.txnRepo.GetAllByUserID(userID)
 	if err != nil {
 		return nil, err
 	}

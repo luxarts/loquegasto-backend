@@ -10,7 +10,7 @@ type Transaction struct {
 	MsgID       int
 	Amount      float64
 	Description string
-	AccountID   *int
+	AccountID   int
 	CreatedAt   *time.Time
 }
 
@@ -34,7 +34,7 @@ type TransactionDTO struct {
 	UserID      int        `json:"user_id,omitempty"`
 	Amount      float64    `json:"amount"`
 	Description string     `json:"description"`
-	AccountID   *int       `json:"account_id,omitempty"`
+	AccountID   int        `json:"account_id"`
 	CreatedAt   *time.Time `json:"created_at"`
 }
 
@@ -42,6 +42,7 @@ func (dto *TransactionDTO) IsValid() bool {
 	return dto.Description != "" &&
 		dto.Amount != 0 &&
 		dto.MsgID != 0 &&
+		dto.AccountID != 0 &&
 		dto.CreatedAt != nil
 }
 
