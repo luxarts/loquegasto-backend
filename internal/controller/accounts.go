@@ -15,6 +15,7 @@ type AccountsController interface {
 	Create(ctx *gin.Context)
 	GetByName(ctx *gin.Context)
 	GetByID(ctx *gin.Context)
+	GetAll(ctx *gin.Context)
 	UpdateByID(ctx *gin.Context)
 	DeleteByID(ctx *gin.Context)
 }
@@ -73,6 +74,24 @@ func (c *accountsController) GetByID(ctx *gin.Context) {
 	}
 
 	response, err := c.srv.GetByID(userID, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
+}
+func (c *accountsController) GetAll(ctx *gin.Context) {
+	userID := ctx.GetInt(defines.ParamUserID)
+	name := ctx.Query(defines.ParamName)
+
+	var response interface{}
+	var err error
+	if name != "" {
+		response, err = c.srv.GetByName(userID, name)
+	} else {
+		response, err = c.srv.GetAll(userID)
+	}
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

@@ -13,8 +13,8 @@ const (
 
 	// Account
 	EndpointAccountsCreate     = "/account"
-	EndpointAccountsGetByName  = "/accounts"
-	EndpointAccountsGetByID    = "/accounts/:id"
-	EndpointAccountsUpdateByID = "/accounts/:id"
-	EndpointAccountsDeleteByID = "/accounts/:id"
+	EndpointAccountsGetAll     = "/accounts"
+	EndpointAccountsGetByID    = "/accounts/:" + ParamID
+	EndpointAccountsUpdateByID = "/accounts/:" + ParamID
+	EndpointAccountsDeleteByID = "/accounts/:" + ParamID
 )

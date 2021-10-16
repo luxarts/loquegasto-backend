@@ -49,13 +49,18 @@ func (r *accountRepository) Create(account *domain.Account) (*domain.Account, er
 	return account, nil
 }
 func (r *accountRepository) GetAllByUserID(userID int) (*[]domain.Account, error) {
-	query := sq.Select("*").
+	query, args, err := sq.Select("*").
 		From(tableAccounts).
 		Where(sq.Eq{"user_id": userID}).
 		RunWith(r.db).
-		PlaceholderFormat(sq.Dollar)
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	rows, err := query.Query()
+	if err != nil {
+		return nil, jsend.NewError("failed ToSql", err, http.StatusInternalServerError)
+	}
+
+	rows, err := r.db.Queryx(query, args...)
 	if err != nil {
 		return nil, jsend.NewError("failed Query", err, http.StatusInternalServerError)
 	}
@@ -63,7 +68,7 @@ func (r *accountRepository) GetAllByUserID(userID int) (*[]domain.Account, error
 	var results []domain.Account
 	for rows.Next() {
 		var a domain.Account
-		if err := rows.Scan(&a.ID, &a.UserID, &a.Name, &a.Balance, &a.CreatedAt); err != nil {
+		if err := rows.StructScan(&a); err != nil {
 			return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
 		}
 		results = append(results, a)

@@ -18,6 +18,7 @@ type AccountsService interface {
 	Create(accountDTO *domain.AccountDTO) (*domain.AccountDTO, error)
 	GetByName(userID int, name string) (*domain.AccountDTO, error)
 	GetByID(userID int, id int) (*domain.AccountDTO, error)
+	GetAll(userID int) (*[]domain.AccountDTO, error)
 	UpdateByID(accountDTO *domain.AccountDTO) (*domain.AccountDTO, error)
 	Delete(id int, userID int) error
 }
@@ -67,6 +68,19 @@ func (s *accountsService) GetByID(userID int, id int) (*domain.AccountDTO, error
 	}
 
 	return account.ToDTO(), nil
+}
+func (s *accountsService) GetAll(userID int) (*[]domain.AccountDTO, error) {
+	accounts, err := s.repo.GetAllByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var accountsDTOs []domain.AccountDTO
+	for _, a := range *accounts {
+		accountsDTOs = append(accountsDTOs, *a.ToDTO())
+	}
+
+	return &accountsDTOs, nil
 }
 func (s *accountsService) UpdateByID(accountDTO *domain.AccountDTO) (*domain.AccountDTO, error) {
 	account := accountDTO.ToAccount()
