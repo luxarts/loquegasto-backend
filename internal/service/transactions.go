@@ -36,7 +36,7 @@ func (s *transactionsService) Create(transactionDTO *domain.TransactionDTO) (*do
 	if err != nil {
 		return nil, err
 	}
-	account.Balance -= int64(transaction.Amount * 100)
+	account.Balance -= transaction.Amount
 	account, err = s.accRepo.Update(account)
 	if err != nil {
 		return nil, err

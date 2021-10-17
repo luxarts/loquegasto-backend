@@ -35,7 +35,7 @@ func NewTransactionsRepository(db *sqlx.DB) TransactionsRepository {
 func (r *transactionsRepository) Create(transaction *domain.Transaction) (*domain.Transaction, error) {
 	id := uuid.NewString()
 
-	query := sq.Insert(tableTransactions).Columns("uuid", "user_id", "msg_id", "amount", "description", "account_id", "created_at").
+	query := sq.Insert(tableTransactions).Columns("uuid", "user_id", "msg_id", "amount", "description", "wallet_id", "created_at").
 		Values(
 			id,
 			transaction.UserID,
@@ -63,7 +63,7 @@ func (r *transactionsRepository) UpdateByMsgID(msgID int, transaction *domain.Tr
 	query := sq.Update(tableTransactions).
 		Set("amount", transaction.Amount).
 		Set("description", transaction.Description).
-		Set("account_id", transaction.WalletID).
+		Set("wallet_id", transaction.WalletID).
 		Where(sq.Eq{"msg_id": msgID}).
 		Suffix("RETURNING \"uuid\"").
 		RunWith(r.db).

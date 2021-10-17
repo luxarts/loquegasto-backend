@@ -8,7 +8,7 @@ type Transaction struct {
 	ID          string
 	UserID      int
 	MsgID       int
-	Amount      float64
+	Amount      int64
 	Description string
 	WalletID    int
 	CreatedAt   *time.Time
@@ -19,7 +19,7 @@ func (txn *Transaction) ToDTO() *TransactionDTO {
 		ID:          txn.ID,
 		MsgID:       txn.MsgID,
 		UserID:      txn.UserID,
-		Amount:      txn.Amount,
+		Amount:      float64(txn.Amount) / 100.0,
 		Description: txn.Description,
 		WalletID:    txn.WalletID,
 		CreatedAt:   txn.CreatedAt,
@@ -55,7 +55,7 @@ func (dto *TransactionDTO) ToTransaction() *Transaction {
 	txn := Transaction{
 		ID:          dto.ID,
 		MsgID:       dto.MsgID,
-		Amount:      dto.Amount,
+		Amount:      int64(dto.Amount * 100),
 		UserID:      dto.UserID,
 		Description: dto.Description,
 		WalletID:    dto.WalletID,
