@@ -12,6 +12,7 @@ import (
 
 type UsersController interface {
 	Create(ctx *gin.Context)
+	Get(ctx *gin.Context)
 }
 type userController struct {
 	srv service.UsersService
@@ -45,4 +46,16 @@ func (c *userController) Create(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
+}
+func (c *userController) Get(ctx *gin.Context) {
+	userID := ctx.GetInt(defines.ParamUserID)
+
+	response, err := c.srv.GetByID(userID)
+
+	if err, ok := err.(*jsend.Body); ok && err != nil {
+		ctx.JSON(*err.Code, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }

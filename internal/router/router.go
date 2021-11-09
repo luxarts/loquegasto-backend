@@ -7,8 +7,10 @@ import (
 	"loquegasto-backend/internal/middleware"
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/service"
+	"loquegasto-backend/internal/utils/jwt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 
@@ -60,6 +62,7 @@ func mapRoutes(r *gin.Engine) {
 	r.GET(defines.EndpointTransactionsGetAllByUserID, authMw.Check, txnCtrl.GetAllByUserID)
 	// Users
 	r.POST(defines.EndpointUsersCreate, authMw.Check, usersCtrl.Create)
+	r.GET(defines.EndpointUsersGet, authMw.Check, usersCtrl.Get)
 	// Wallets
 	r.POST(defines.EndpointWalletsCreate, authMw.Check, walletsCtrl.Create)
 	r.GET(defines.EndpointWalletsGetAll, authMw.Check, walletsCtrl.GetAll)
@@ -67,10 +70,23 @@ func mapRoutes(r *gin.Engine) {
 	r.PUT(defines.EndpointWalletsUpdateByID, authMw.Check, walletsCtrl.UpdateByID)
 	r.DELETE(defines.EndpointWalletsDeleteByID, authMw.Check, walletsCtrl.DeleteByID)
 
+	r.GET("/token/:userID", generateToken)
+
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)
 }
 
 func healthCheck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, jsend.NewSuccess("pong"))
+}
+func generateToken(ctx *gin.Context) {
+	userID := ctx.Param("userID")
+	userIDInt, err := strconv.Atoi(userID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid user ID"))
+		return
+	}
+	token := jwt.GenerateToken(nil, &jwt.Payload{Subject: userIDInt})
+
+	ctx.String(http.StatusOK, token)
 }

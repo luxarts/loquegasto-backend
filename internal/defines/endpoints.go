@@ -10,6 +10,7 @@ const (
 
 	// Users
 	EndpointUsersCreate = "/user"
+	EndpointUsersGet    = "/user"
 
 	// Wallets
 	EndpointWalletsCreate     = "/wallet"
