@@ -27,7 +27,7 @@ func (c *userController) Create(ctx *gin.Context) {
 	var body domain.UserDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
 		return
 	}
 
@@ -40,8 +40,8 @@ func (c *userController) Create(ctx *gin.Context) {
 
 	response, err := c.srv.Create(&body)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
@@ -52,7 +52,7 @@ func (c *userController) Get(ctx *gin.Context) {
 
 	response, err := c.srv.GetByID(userID)
 
-	if err, ok := err.(*jsend.Body); ok && err != nil {
+	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)
 		return
 	}

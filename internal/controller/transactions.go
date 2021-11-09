@@ -31,7 +31,7 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 	var body domain.TransactionDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
 		return
 	}
 
@@ -44,8 +44,8 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 
 	response, err := c.srv.Create(&body)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
@@ -56,13 +56,13 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 	msgIDStr := ctx.Param(defines.ParamMsgID)
 	msgID, err := strconv.Atoi(msgIDStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid message ID"))
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid message id"))
 		return
 	}
 
 	var body domain.TransactionDTO
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
 		return
 	}
 
@@ -73,8 +73,8 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 
 	response, err := c.srv.UpdateByMsgID(userID, msgID, &body)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
@@ -85,8 +85,8 @@ func (c *transactionsController) GetAllByUserID(ctx *gin.Context) {
 
 	response, err := c.srv.GetAllByUserID(userID)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 

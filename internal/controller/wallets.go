@@ -32,7 +32,7 @@ func (c *walletsController) Create(ctx *gin.Context) {
 	var body domain.WalletDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
 		return
 	}
 
@@ -45,8 +45,8 @@ func (c *walletsController) Create(ctx *gin.Context) {
 
 	response, err := c.srv.Create(&body)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
@@ -56,9 +56,15 @@ func (c *walletsController) GetByName(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
 	name := ctx.Query(defines.ParamName)
 
+	if name == "" {
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("missing name query param"))
+		return
+	}
+
 	response, err := c.srv.GetByName(userID, name)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
@@ -68,14 +74,15 @@ func (c *walletsController) GetByID(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
 	idStr := ctx.Param(defines.ParamID)
 	id, err := strconv.Atoi(idStr)
+
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("atoi-error", err))
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid id"))
 		return
 	}
 
 	response, err := c.srv.GetByID(userID, id)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
@@ -83,17 +90,11 @@ func (c *walletsController) GetByID(ctx *gin.Context) {
 }
 func (c *walletsController) GetAll(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
-	name := ctx.Query(defines.ParamName)
 
-	var response interface{}
-	var err error
-	if name != "" {
-		response, err = c.srv.GetByName(userID, name)
-	} else {
-		response, err = c.srv.GetAll(userID)
-	}
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	response, err := c.srv.GetAll(userID)
+
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
@@ -103,22 +104,25 @@ func (c *walletsController) UpdateByID(ctx *gin.Context) {
 	var body domain.WalletDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
 		return
 	}
 	idStr := ctx.Param(defines.ParamID)
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("atoi-error", err))
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid id"))
 		return
 	}
-	body.ID = id
+	if body.ID != id {
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body: id doesn't match"))
+		return
+	}
 	body.UserID = ctx.GetInt(defines.ParamUserID)
 
 	response, err := c.srv.UpdateByID(&body)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
@@ -128,15 +132,15 @@ func (c *walletsController) DeleteByID(ctx *gin.Context) {
 	idStr := ctx.Param(defines.ParamID)
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("atoi-error", err))
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid id"))
 		return
 	}
 	userID := ctx.GetInt(defines.ParamUserID)
 
 	err = c.srv.Delete(id, userID)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
