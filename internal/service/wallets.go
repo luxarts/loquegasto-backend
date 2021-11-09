@@ -55,7 +55,7 @@ func (s *walletsService) GetByName(userID int, name string) (*domain.WalletDTO, 
 		}
 	}
 
-	return nil, nil
+	return nil, jsend.NewError("wallet not found", nil, http.StatusNotFound)
 }
 func (s *walletsService) GetByID(userID int, id int) (*domain.WalletDTO, error) {
 	wallet, err := s.repo.GetByID(id)

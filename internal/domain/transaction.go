@@ -5,13 +5,13 @@ import (
 )
 
 type Transaction struct {
-	ID          string
-	UserID      int
-	MsgID       int
-	Amount      int64
-	Description string
-	WalletID    int
-	CreatedAt   *time.Time
+	ID          string     `db:"id"`
+	UserID      int        `db:"user_id"`
+	MsgID       int        `db:"msg_id"`
+	Amount      int64      `db:"amount"`
+	Description string     `db:"description"`
+	WalletID    int        `db:"wallet_id"`
+	CreatedAt   *time.Time `db:"created_at"`
 }
 
 func (txn *Transaction) ToDTO() *TransactionDTO {

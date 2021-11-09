@@ -61,7 +61,7 @@ func (s *transactionsService) UpdateByMsgID(userID int, msgID int, transactionDT
 	if err != nil {
 		return nil, err
 	}
-	account.Balance -= int64(transaction.Amount * 100)
+	account.Balance -= transaction.Amount * 100
 	account, err = s.accRepo.Update(account)
 	if err != nil {
 		return nil, err
