@@ -21,28 +21,30 @@ type UsersRepository interface {
 	GetByID(id int) (*domain.User, error)
 }
 type usersRepository struct {
-	db *sqlx.DB
+	db         *sqlx.DB
+	sqlBuilder *usersSQL
 }
 
 func NewUsersRepository(db *sqlx.DB) UsersRepository {
 	return &usersRepository{
-		db: db,
+		db:         db,
+		sqlBuilder: &usersSQL{},
 	}
 }
 
 func (r *usersRepository) Create(user *domain.User) (*domain.User, error) {
-	query, args, err := r.createSQL(user.ID, user.ChatID, user.CreatedAt)
+	query, args, err := r.sqlBuilder.CreateSQL(user.ID, user.ChatID, user.CreatedAt)
 	_, err = r.db.Exec(query, args...)
 	if err != nil {
-		return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
 	}
 
 	return user, nil
 }
 func (r *usersRepository) GetByID(id int) (*domain.User, error) {
-	query, args, err := r.getByIDSQL(id)
+	query, args, err := r.sqlBuilder.GetByIDSQL(id)
 	if err != nil {
-		return nil, jsend.NewError("failed ToSql", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
 	}
 
 	var user domain.User
@@ -57,14 +59,16 @@ func (r *usersRepository) GetByID(id int) (*domain.User, error) {
 	return &user, nil
 }
 
-func (r *usersRepository) getByIDSQL(id int) (string, []interface{}, error) {
+type usersSQL struct{}
+
+func (usql *usersSQL) GetByIDSQL(id int) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableUsers).
 		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (r *usersRepository) createSQL(userID int, chatID int, createdAt *time.Time) (string, []interface{}, error) {
+func (usql *usersSQL) CreateSQL(userID int, chatID int, createdAt *time.Time) (string, []interface{}, error) {
 	return sq.Insert(tableUsers).
 		Columns("id", "chat_id", "created_at").
 		Values(userID, chatID, createdAt).

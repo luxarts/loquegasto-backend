@@ -16,11 +16,11 @@ import (
 
 type WalletsService interface {
 	Create(accountDTO *domain.WalletDTO) (*domain.WalletDTO, error)
-	GetByName(userID int, name string) (*domain.WalletDTO, error)
+	GetByName(userID int, name string) (*[]domain.WalletDTO, error)
 	GetByID(userID int, id int) (*domain.WalletDTO, error)
 	GetAll(userID int) (*[]domain.WalletDTO, error)
 	UpdateByID(accountDTO *domain.WalletDTO) (*domain.WalletDTO, error)
-	Delete(id int, userID int) error
+	DeleteByID(id int, userID int) error
 }
 type walletsService struct {
 	repo repository.WalletRepository
@@ -41,7 +41,7 @@ func (s *walletsService) Create(walletDTO *domain.WalletDTO) (*domain.WalletDTO,
 
 	return wallet.ToDTO(), nil
 }
-func (s *walletsService) GetByName(userID int, name string) (*domain.WalletDTO, error) {
+func (s *walletsService) GetByName(userID int, name string) (*[]domain.WalletDTO, error) {
 	wallets, err := s.repo.GetAllByUserID(userID)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (s *walletsService) GetByName(userID int, name string) (*domain.WalletDTO, 
 
 	for _, wallet := range *wallets {
 		if sanitizeName(wallet.Name) == name {
-			return wallet.ToDTO(), nil
+			return &[]domain.WalletDTO{*wallet.ToDTO()}, nil
 		}
 	}
 
@@ -85,15 +85,24 @@ func (s *walletsService) GetAll(userID int) (*[]domain.WalletDTO, error) {
 func (s *walletsService) UpdateByID(walletDTO *domain.WalletDTO) (*domain.WalletDTO, error) {
 	wallet := walletDTO.ToWallet()
 
-	wallet, err := s.repo.Update(wallet)
+	wallet, err := s.repo.UpdateByID(wallet)
 	if err != nil {
 		return nil, err
 	}
 
 	return wallet.ToDTO(), nil
 }
-func (s *walletsService) Delete(id int, userID int) error {
-	return s.repo.Delete(id, userID)
+func (s *walletsService) DeleteByID(id int, userID int) error {
+	wallet, err := s.repo.GetByID(id)
+	if err != nil {
+		return err
+	}
+
+	if wallet.UserID != userID {
+		return jsend.NewError("forbidden", nil, http.StatusForbidden)
+	}
+
+	return s.repo.DeleteByID(id)
 }
 
 // Utils

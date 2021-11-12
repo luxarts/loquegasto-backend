@@ -90,8 +90,16 @@ func (c *walletsController) GetByID(ctx *gin.Context) {
 }
 func (c *walletsController) GetAll(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
+	filterName := ctx.Query(defines.ParamName)
 
-	response, err := c.srv.GetAll(userID)
+	var response *[]domain.WalletDTO
+	var err error
+
+	if filterName != "" {
+		response, err = c.srv.GetByName(userID, filterName)
+	} else {
+		response, err = c.srv.GetAll(userID)
+	}
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)
@@ -113,10 +121,7 @@ func (c *walletsController) UpdateByID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid id"))
 		return
 	}
-	if body.ID != id {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body: id doesn't match"))
-		return
-	}
+	body.ID = id
 	body.UserID = ctx.GetInt(defines.ParamUserID)
 
 	response, err := c.srv.UpdateByID(&body)
@@ -137,7 +142,7 @@ func (c *walletsController) DeleteByID(ctx *gin.Context) {
 	}
 	userID := ctx.GetInt(defines.ParamUserID)
 
-	err = c.srv.Delete(id, userID)
+	err = c.srv.DeleteByID(id, userID)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)

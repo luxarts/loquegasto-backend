@@ -65,13 +65,16 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
 		return
 	}
-
 	if !body.IsValidForUpdate() {
 		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
 		return
 	}
+	if body.MsgID != msgID {
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body: msg_id doesn't match"))
+		return
+	}
 
-	response, err := c.srv.UpdateByMsgID(userID, msgID, &body)
+	response, err := c.srv.UpdateByMsgID(userID, &body)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)

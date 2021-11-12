@@ -5,7 +5,7 @@ import (
 )
 
 type Wallet struct {
-	ID        int        `db:"id"`
+	ID        *int       `db:"id"`
 	UserID    int        `db:"user_id"`
 	Name      string     `db:"name"`
 	Balance   int64      `db:"balance"`
@@ -21,7 +21,7 @@ type WalletDTO struct {
 
 func (a *Wallet) ToDTO() *WalletDTO {
 	return &WalletDTO{
-		ID:        a.ID,
+		ID:        *a.ID,
 		UserID:    a.UserID,
 		Name:      a.Name,
 		Balance:   float64(a.Balance) / 100.0,
@@ -30,7 +30,7 @@ func (a *Wallet) ToDTO() *WalletDTO {
 }
 func (dto *WalletDTO) ToWallet() *Wallet {
 	return &Wallet{
-		ID:        dto.ID,
+		ID:        &dto.ID,
 		UserID:    dto.UserID,
 		Name:      dto.Name,
 		Balance:   int64(dto.Balance * 100),

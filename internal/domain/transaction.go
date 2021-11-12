@@ -5,7 +5,7 @@ import (
 )
 
 type Transaction struct {
-	ID          string     `db:"id"`
+	ID          string     `db:"uuid"`
 	UserID      int        `db:"user_id"`
 	MsgID       int        `db:"msg_id"`
 	Amount      int64      `db:"amount"`

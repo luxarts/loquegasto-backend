@@ -7,19 +7,19 @@ import (
 
 type TransactionsService interface {
 	Create(transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error)
-	UpdateByMsgID(userID int, msgID int, transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error)
+	UpdateByMsgID(userID int, transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error)
 	GetAllByUserID(userID int) (*[]domain.TransactionDTO, error)
 }
 
 type transactionsService struct {
-	txnRepo repository.TransactionsRepository
-	accRepo repository.WalletRepository
+	txnRepo    repository.TransactionsRepository
+	walletRepo repository.WalletRepository
 }
 
-func NewTransactionsService(txnRepo repository.TransactionsRepository, accRepo repository.WalletRepository) TransactionsService {
+func NewTransactionsService(txnRepo repository.TransactionsRepository, walletRepo repository.WalletRepository) TransactionsService {
 	return &transactionsService{
-		txnRepo: txnRepo,
-		accRepo: accRepo,
+		txnRepo:    txnRepo,
+		walletRepo: walletRepo,
 	}
 }
 
@@ -32,12 +32,12 @@ func (s *transactionsService) Create(transactionDTO *domain.TransactionDTO) (*do
 	}
 
 	// Update balance
-	account, err := s.accRepo.GetByID(transaction.WalletID)
+	wallet, err := s.walletRepo.GetByID(transaction.WalletID)
 	if err != nil {
 		return nil, err
 	}
-	account.Balance -= transaction.Amount
-	account, err = s.accRepo.Update(account)
+	wallet.Balance += transaction.Amount
+	wallet, err = s.walletRepo.UpdateByID(wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -46,23 +46,23 @@ func (s *transactionsService) Create(transactionDTO *domain.TransactionDTO) (*do
 
 	return response, nil
 }
-func (s *transactionsService) UpdateByMsgID(userID int, msgID int, transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error) {
+func (s *transactionsService) UpdateByMsgID(userID int, transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error) {
 	transactionDTO.UserID = userID
 
 	transaction := transactionDTO.ToTransaction()
 
-	transaction, err := s.txnRepo.UpdateByMsgID(msgID, transaction)
+	transaction, err := s.txnRepo.UpdateByMsgID(transaction)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update balance
-	account, err := s.accRepo.GetByID(transaction.WalletID)
+	wallet, err := s.walletRepo.GetByID(transaction.WalletID)
 	if err != nil {
 		return nil, err
 	}
-	account.Balance -= transaction.Amount * 100
-	account, err = s.accRepo.Update(account)
+	wallet.Balance += transaction.Amount * 100
+	wallet, err = s.walletRepo.UpdateByID(wallet)
 	if err != nil {
 		return nil, err
 	}
