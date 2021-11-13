@@ -21,7 +21,7 @@ const (
 type TransactionsRepository interface {
 	Create(transaction *domain.Transaction) (*domain.Transaction, error)
 	UpdateByMsgID(transaction *domain.Transaction) (*domain.Transaction, error)
-	GetAllByUserID(userID int) (*[]domain.Transaction, error)
+	GetAllByUserID(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error)
 }
 
 type transactionsRepository struct {
@@ -61,8 +61,8 @@ func (r *transactionsRepository) UpdateByMsgID(transaction *domain.Transaction) 
 	}
 	return transaction, nil
 }
-func (r *transactionsRepository) GetAllByUserID(userID int) (*[]domain.Transaction, error) {
-	query, args, err := r.sqlBuilder.GetAllByUserIDSQL(userID)
+func (r *transactionsRepository) GetAllByUserID(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error) {
+	query, args, err := r.sqlBuilder.GetAllByUserIDSQL(userID, filters)
 
 	rows, err := r.db.Queryx(query, args...)
 	if err != nil {
@@ -99,14 +99,28 @@ func (tsql *transactionsSQL) UpdateByMsgIDSQL(transaction *domain.Transaction) (
 		Set("amount", transaction.Amount).
 		Set("description", transaction.Description).
 		Set("wallet_id", transaction.WalletID).
-		Where(sq.Eq{"msg_id": transaction.MsgID}).
+		Set("category_id", transaction.CategoryID).
+		Where(sq.And{
+			sq.Eq{"msg_id": transaction.MsgID},
+			sq.Eq{"user_id": transaction.UserID},
+		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (tsql *transactionsSQL) GetAllByUserIDSQL(userID int) (string, []interface{}, error) {
-	return sq.Select("*").
-		From(tableTransactions).
-		Where(sq.Eq{"user_id": userID}).
-		PlaceholderFormat(sq.Dollar).
+func (tsql *transactionsSQL) GetAllByUserIDSQL(userID int, filters *domain.TransactionFilters) (string, []interface{}, error) {
+	q := sq.Select("*").
+		From(tableTransactions)
+
+	if len(*filters) > 0 {
+		and := sq.And{sq.Eq{"user_id": userID}}
+		for k, v := range *filters {
+			and = append(and, sq.Eq{k: v})
+		}
+		q = q.Where(and)
+	} else {
+		q = q.Where(sq.Eq{"user_id": userID})
+	}
+
+	return q.PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

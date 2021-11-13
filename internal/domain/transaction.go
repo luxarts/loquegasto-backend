@@ -12,6 +12,7 @@ type Transaction struct {
 	Description string     `db:"description"`
 	WalletID    int        `db:"wallet_id"`
 	CreatedAt   *time.Time `db:"created_at"`
+	CategoryID  *int       `db:"category_id"`
 }
 
 func (txn *Transaction) ToDTO() *TransactionDTO {
@@ -23,6 +24,7 @@ func (txn *Transaction) ToDTO() *TransactionDTO {
 		Description: txn.Description,
 		WalletID:    txn.WalletID,
 		CreatedAt:   txn.CreatedAt,
+		CategoryID:  txn.CategoryID,
 	}
 
 	return &dto
@@ -36,6 +38,7 @@ type TransactionDTO struct {
 	Description string     `json:"description"`
 	WalletID    int        `json:"wallet_id"`
 	CreatedAt   *time.Time `json:"created_at"`
+	CategoryID  *int       `json:"category_id,omitempty"`
 }
 
 func (dto *TransactionDTO) IsValid() bool {
@@ -60,7 +63,10 @@ func (dto *TransactionDTO) ToTransaction() *Transaction {
 		Description: dto.Description,
 		WalletID:    dto.WalletID,
 		CreatedAt:   dto.CreatedAt,
+		CategoryID:  dto.CategoryID,
 	}
 
 	return &txn
 }
+
+type TransactionFilters map[string]string

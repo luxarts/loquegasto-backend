@@ -41,16 +41,19 @@ func mapRoutes(r *gin.Engine) {
 	txnRepo := repository.NewTransactionsRepository(db)
 	usersRepo := repository.NewUsersRepository(db)
 	walletsRepo := repository.NewWalletRepository(db)
+	catRepo := repository.NewCategoriesRepository(db)
 
 	// Services init
 	txnSrv := service.NewTransactionsService(txnRepo, walletsRepo)
 	usersSrv := service.NewUsersService(usersRepo)
 	walletsSrv := service.NewWalletsService(walletsRepo)
+	catSrv := service.NewCategoriesService(catRepo)
 
 	// Controllers init
 	txnCtrl := controller.NewTransactionsController(txnSrv)
 	usersCtrl := controller.NewUsersController(usersSrv)
 	walletsCtrl := controller.NewWalletsController(walletsSrv)
+	catCtrl := controller.NewCategoriesController(catSrv)
 
 	// Middleware
 	authMw := middleware.NewAuthMiddleware()
@@ -69,6 +72,10 @@ func mapRoutes(r *gin.Engine) {
 	r.GET(defines.EndpointWalletsGetByID, authMw.Check, walletsCtrl.GetByID)
 	r.PUT(defines.EndpointWalletsUpdateByID, authMw.Check, walletsCtrl.UpdateByID)
 	r.DELETE(defines.EndpointWalletsDeleteByID, authMw.Check, walletsCtrl.DeleteByID)
+	// Categories
+	r.POST(defines.EndpointCategoriesCreate, authMw.Check, catCtrl.Create)
+	r.GET(defines.EndpointCategoriesGetAll, authMw.Check, catCtrl.GetAll)
+	r.DELETE(defines.EndpointCategoriesDeleteByID, authMw.Check, catCtrl.DeleteByID)
 
 	r.GET("/token/:userID", generateToken)
 

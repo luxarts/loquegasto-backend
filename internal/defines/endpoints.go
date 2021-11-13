@@ -18,4 +18,9 @@ const (
 	EndpointWalletsGetByID    = "/wallets/:" + ParamID
 	EndpointWalletsUpdateByID = "/wallets/:" + ParamID
 	EndpointWalletsDeleteByID = "/wallets/:" + ParamID
+
+	// Categories
+	EndpointCategoriesCreate     = "/category"
+	EndpointCategoriesGetAll     = "/categories"
+	EndpointCategoriesDeleteByID = "/categories/:" + ParamID
 )

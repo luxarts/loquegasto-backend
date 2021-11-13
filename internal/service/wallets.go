@@ -3,15 +3,10 @@ package service
 import (
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/repository"
+	"loquegasto-backend/internal/utils/sanitizer"
 	"net/http"
-	"strings"
-	"unicode"
 
 	"github.com/luxarts/jsend-go"
-
-	"golang.org/x/text/runes"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 )
 
 type WalletsService interface {
@@ -47,10 +42,10 @@ func (s *walletsService) GetByName(userID int, name string) (*[]domain.WalletDTO
 		return nil, err
 	}
 
-	name = sanitizeName(name)
+	name = sanitizer.Sanitize(name)
 
 	for _, wallet := range *wallets {
-		if sanitizeName(wallet.Name) == name {
+		if sanitizer.Sanitize(wallet.Name) == name {
 			return &[]domain.WalletDTO{*wallet.ToDTO()}, nil
 		}
 	}
@@ -93,27 +88,5 @@ func (s *walletsService) UpdateByID(walletDTO *domain.WalletDTO) (*domain.Wallet
 	return wallet.ToDTO(), nil
 }
 func (s *walletsService) DeleteByID(id int, userID int) error {
-	wallet, err := s.repo.GetByID(id)
-	if err != nil {
-		return err
-	}
-
-	if wallet.UserID != userID {
-		return jsend.NewError("forbidden", nil, http.StatusForbidden)
-	}
-
-	return s.repo.DeleteByID(id)
-}
-
-// Utils
-func sanitizeName(s string) string {
-	// Remove leading/trailing spaces
-	s = strings.TrimSpace(s)
-	// Converts letters with tildes to normal
-	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
-	s, _, _ = transform.String(t, s)
-	// Convert string to lowercase
-	s = strings.ToLower(s)
-
-	return s
+	return s.repo.DeleteByID(id, userID)
 }

@@ -21,7 +21,7 @@ type WalletRepository interface {
 	GetAllByUserID(userID int) (*[]domain.Wallet, error)
 	GetByID(id int) (*domain.Wallet, error)
 	UpdateByID(account *domain.Wallet) (*domain.Wallet, error)
-	DeleteByID(id int) error
+	DeleteByID(id int, userID int) error
 }
 type walletRepository struct {
 	db         *sqlx.DB
@@ -42,7 +42,7 @@ func (r *walletRepository) Create(wallet *domain.Wallet) (*domain.Wallet, error)
 
 	err = r.db.QueryRowx(query, args...).Scan(&wallet.ID)
 	if err != nil {
-		return nil, jsend.NewError("failed Exec", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
 	}
 
 	return wallet, nil
@@ -77,7 +77,7 @@ func (r *walletRepository) GetByID(id int) (*domain.Wallet, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id)
 
 	if err != nil {
-		return nil, jsend.NewError("failed ToSql", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
 	}
 
 	var wallet domain.Wallet
@@ -104,8 +104,8 @@ func (r *walletRepository) UpdateByID(wallet *domain.Wallet) (*domain.Wallet, er
 	}
 	return wallet, nil
 }
-func (r *walletRepository) DeleteByID(id int) error {
-	query, args, err := r.sqlBuilder.DeleteByIDSQL(id)
+func (r *walletRepository) DeleteByID(id int, userID int) error {
+	query, args, err := r.sqlBuilder.DeleteByIDSQL(id, userID)
 
 	if err != nil {
 		return jsend.NewError("failed DeleteByIDSQL", err, http.StatusInternalServerError)
@@ -152,9 +152,12 @@ func (wsql *walletsSQL) UpdateByIDSQL(wallet *domain.Wallet) (string, []interfac
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) DeleteByIDSQL(id int) (string, []interface{}, error) {
+func (wsql *walletsSQL) DeleteByIDSQL(id int, userID int) (string, []interface{}, error) {
 	return sq.Delete(tableWallets).
-		Where(sq.Eq{"id": id}).
+		Where(sq.And{
+			sq.Eq{"id": id},
+			sq.Eq{"user_id": userID},
+		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

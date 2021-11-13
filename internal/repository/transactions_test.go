@@ -69,3 +69,21 @@ func TestTransactionsSQL_UpdateByMsgIDSQL(t *testing.T) {
 	require.Equal(t, "INSERT INTO backend.transactions (uuid,user_id,msg_id,amount,description,wallet_id,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)", query)
 	require.Equal(t, expectedValues, fmt.Sprintf("%v", args))
 }
+func TestTransactionsSQL_GetAllByUserIDSQL(t *testing.T) {
+	// Given
+	userID := 123
+	filters := domain.TransactionFilters{
+		"category_id": "1",
+		"wallet_id":   "2",
+	}
+	expectedValues := fmt.Sprintf("[%d %s %s]", userID, "1", "2")
+
+	tsql := transactionsSQL{}
+	// When
+	query, args, err := tsql.GetAllByUserIDSQL(userID, &filters)
+
+	// Then
+	require.Nil(t, err)
+	require.Equal(t, "SELECT * FROM backend.transactions WHERE (user_id = $1 AND category_id = $2 AND wallet_id = $3)", query)
+	require.Equal(t, expectedValues, fmt.Sprintf("%v", args))
+}

@@ -8,7 +8,7 @@ import (
 type TransactionsService interface {
 	Create(transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error)
 	UpdateByMsgID(userID int, transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error)
-	GetAllByUserID(userID int) (*[]domain.TransactionDTO, error)
+	GetAllByUserID(userID int, filters *domain.TransactionFilters) (*[]domain.TransactionDTO, error)
 }
 
 type transactionsService struct {
@@ -71,8 +71,8 @@ func (s *transactionsService) UpdateByMsgID(userID int, transactionDTO *domain.T
 
 	return response, nil
 }
-func (s *transactionsService) GetAllByUserID(userID int) (*[]domain.TransactionDTO, error) {
-	res, err := s.txnRepo.GetAllByUserID(userID)
+func (s *transactionsService) GetAllByUserID(userID int, filters *domain.TransactionFilters) (*[]domain.TransactionDTO, error) {
+	res, err := s.txnRepo.GetAllByUserID(userID, filters)
 	if err != nil {
 		return nil, err
 	}

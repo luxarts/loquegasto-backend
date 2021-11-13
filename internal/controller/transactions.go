@@ -86,7 +86,9 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 func (c *transactionsController) GetAllByUserID(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
 
-	response, err := c.srv.GetAllByUserID(userID)
+	var filters domain.TransactionFilters = ctx.QueryMap("filters")
+
+	response, err := c.srv.GetAllByUserID(userID, &filters)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)
