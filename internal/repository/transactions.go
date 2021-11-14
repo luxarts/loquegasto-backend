@@ -4,6 +4,7 @@ import (
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/utils/dbstruct"
 	"net/http"
+	"strings"
 
 	"github.com/luxarts/jsend-go"
 
@@ -22,6 +23,7 @@ type TransactionsRepository interface {
 	Create(transaction *domain.Transaction) (*domain.Transaction, error)
 	UpdateByMsgID(transaction *domain.Transaction) (*domain.Transaction, error)
 	GetAllByUserID(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error)
+	GetByMsgID(msgID int, userID int) (*domain.Transaction, error)
 }
 
 type transactionsRepository struct {
@@ -83,6 +85,22 @@ func (r *transactionsRepository) GetAllByUserID(userID int, filters *domain.Tran
 
 	return &results, nil
 }
+func (r *transactionsRepository) GetByMsgID(msgID int, userID int) (*domain.Transaction, error) {
+	query, args, err := r.sqlBuilder.GetByMsgIDSQL(msgID, userID)
+	if err != nil {
+		return nil, jsend.NewError("failed GetByMsgIDSQL", err, http.StatusInternalServerError)
+	}
+	var transaction domain.Transaction
+	err = r.db.QueryRowx(query, args...).StructScan(&transaction)
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return nil, jsend.NewError("transaction not found", nil, http.StatusNotFound)
+		}
+		return nil, jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
+	}
+
+	return &transaction, nil
+}
 
 // SQL builders
 type transactionsSQL struct{}
@@ -122,5 +140,15 @@ func (tsql *transactionsSQL) GetAllByUserIDSQL(userID int, filters *domain.Trans
 	}
 
 	return q.PlaceholderFormat(sq.Dollar).
+		ToSql()
+}
+func (tsql *transactionsSQL) GetByMsgIDSQL(msgID int, userID int) (string, []interface{}, error) {
+	return sq.Select("*").
+		From(tableTransactions).
+		Where(sq.And{
+			sq.Eq{"msg_id": msgID},
+			sq.Eq{"user_id": userID},
+		}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

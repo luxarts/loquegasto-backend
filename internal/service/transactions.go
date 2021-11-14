@@ -47,21 +47,30 @@ func (s *transactionsService) Create(transactionDTO *domain.TransactionDTO) (*do
 	return response, nil
 }
 func (s *transactionsService) UpdateByMsgID(userID int, transactionDTO *domain.TransactionDTO) (*domain.TransactionDTO, error) {
-	transactionDTO.UserID = userID
-
-	transaction := transactionDTO.ToTransaction()
-
-	transaction, err := s.txnRepo.UpdateByMsgID(transaction)
+	currentTransaction, err := s.txnRepo.GetByMsgID(transactionDTO.MsgID, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Update balance
+	transactionDTO.UserID = userID
+	transaction := transactionDTO.ToTransaction()
+
+	transaction, err = s.txnRepo.UpdateByMsgID(transaction)
+	if err != nil {
+		return nil, err
+	}
+
 	wallet, err := s.walletRepo.GetByID(transaction.WalletID)
 	if err != nil {
 		return nil, err
 	}
-	wallet.Balance += transaction.Amount * 100
+
+	// Rollback old transaction's amount
+	wallet.Balance -= currentTransaction.Amount
+
+	// Update balance with new transaction's amount
+	wallet.Balance += transaction.Amount
+
 	wallet, err = s.walletRepo.UpdateByID(wallet)
 	if err != nil {
 		return nil, err
