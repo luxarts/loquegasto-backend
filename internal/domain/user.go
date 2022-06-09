@@ -3,9 +3,9 @@ package domain
 import "time"
 
 type User struct {
-	ID        int        `db:"id"`
-	CreatedAt *time.Time `db:"created_at"`
-	ChatID    int        `db:"chat_id"`
+	ID        int       `db:"id"`
+	CreatedAt time.Time `db:"created_at"`
+	ChatID    int       `db:"chat_id"`
 }
 type UserDTO struct {
 	ID        int        `json:"id"`
@@ -16,14 +16,14 @@ type UserDTO struct {
 func (u *User) ToDTO() *UserDTO {
 	return &UserDTO{
 		ID:        u.ID,
-		CreatedAt: u.CreatedAt,
+		CreatedAt: &u.CreatedAt,
 		ChatID:    u.ChatID,
 	}
 }
 func (dto *UserDTO) ToUser() *User {
 	return &User{
 		ID:        dto.ID,
-		CreatedAt: dto.CreatedAt,
+		CreatedAt: *dto.CreatedAt,
 		ChatID:    dto.ChatID,
 	}
 }

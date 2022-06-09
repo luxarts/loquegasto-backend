@@ -4,23 +4,23 @@ const (
 	EndpointPing = "/ping"
 
 	// Transactions
-	EndpointTransactionsCreate         = "/transaction"
-	EndpointTransactionsUpdateByMsgID  = "/transactions/:" + ParamMsgID
+	EndpointTransactionsCreate         = "/transactions"
+	EndpointTransactionsUpdateByMsgID  = "/transaction/:" + ParamMsgID
 	EndpointTransactionsGetAllByUserID = "/transactions"
 
 	// Users
-	EndpointUsersCreate = "/user"
+	EndpointUsersCreate = "/users"
 	EndpointUsersGet    = "/user"
 
 	// Wallets
-	EndpointWalletsCreate     = "/wallet"
+	EndpointWalletsCreate     = "/wallets"
 	EndpointWalletsGetAll     = "/wallets"
-	EndpointWalletsGetByID    = "/wallets/:" + ParamID
-	EndpointWalletsUpdateByID = "/wallets/:" + ParamID
-	EndpointWalletsDeleteByID = "/wallets/:" + ParamID
+	EndpointWalletsGetByID    = "/wallet/:" + ParamID
+	EndpointWalletsUpdateByID = "/wallet/:" + ParamID
+	EndpointWalletsDeleteByID = "/wallet/:" + ParamID
 
 	// Categories
-	EndpointCategoriesCreate     = "/category"
+	EndpointCategoriesCreate     = "/categories"
 	EndpointCategoriesGetAll     = "/categories"
-	EndpointCategoriesDeleteByID = "/categories/:" + ParamID
+	EndpointCategoriesDeleteByID = "/category/:" + ParamID
 )

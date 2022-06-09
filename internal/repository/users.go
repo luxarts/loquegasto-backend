@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	tableUsers = "backend.users"
+	tableUsers = "core.users"
 )
 
 type UsersRepository interface {
@@ -68,7 +68,7 @@ func (usql *usersSQL) GetByIDSQL(id int) (string, []interface{}, error) {
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (usql *usersSQL) CreateSQL(userID int, chatID int, createdAt *time.Time) (string, []interface{}, error) {
+func (usql *usersSQL) CreateSQL(userID int, chatID int, createdAt time.Time) (string, []interface{}, error) {
 	return sq.Insert(tableUsers).
 		Columns("id", "chat_id", "created_at").
 		Values(userID, chatID, createdAt).
