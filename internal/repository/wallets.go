@@ -13,12 +13,13 @@ import (
 )
 
 const (
-	tableWallets = "backend.wallets"
+	tableWallets = "core.wallets"
 )
 
 type WalletRepository interface {
 	Create(account *domain.Wallet) (*domain.Wallet, error)
 	GetAllByUserID(userID int) (*[]domain.Wallet, error)
+	GetBySanitizedName(userID int, name string) (*domain.Wallet, error)
 	GetByID(id int) (*domain.Wallet, error)
 	UpdateByID(account *domain.Wallet) (*domain.Wallet, error)
 	DeleteByID(id int, userID int) error
@@ -73,6 +74,24 @@ func (r *walletRepository) GetAllByUserID(userID int) (*[]domain.Wallet, error) 
 
 	return &results, nil
 }
+func (r *walletRepository) GetBySanitizedName(userID int, name string) (*domain.Wallet, error) {
+	query, args, err := r.sqlBuilder.GetBySanitizedNameSQL(userID, name)
+
+	if err != nil {
+		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
+	}
+
+	var wallet domain.Wallet
+	err = r.db.QueryRowx(query, args...).StructScan(&wallet)
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return nil, jsend.NewError("wallet not found", nil, http.StatusNotFound)
+		}
+		return nil, jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
+	}
+
+	return &wallet, nil
+}
 func (r *walletRepository) GetByID(id int) (*domain.Wallet, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id)
 
@@ -98,10 +117,15 @@ func (r *walletRepository) UpdateByID(wallet *domain.Wallet) (*domain.Wallet, er
 		return nil, jsend.NewError("failed UpdateSQL", err, http.StatusInternalServerError)
 	}
 
-	_, err = r.db.Exec(query, args...)
+	res, err := r.db.Exec(query, args...)
 	if err != nil {
 		return nil, jsend.NewError("failed Exec", err, http.StatusInternalServerError)
 	}
+
+	if rows, _ := res.RowsAffected(); rows == 0 {
+		return nil, jsend.NewError("wallet not found", nil, http.StatusNotFound)
+	}
+
 	return wallet, nil
 }
 func (r *walletRepository) DeleteByID(id int, userID int) error {
@@ -111,10 +135,15 @@ func (r *walletRepository) DeleteByID(id int, userID int) error {
 		return jsend.NewError("failed DeleteByIDSQL", err, http.StatusInternalServerError)
 	}
 
-	_, err = r.db.Exec(query, args...)
+	res, err := r.db.Exec(query, args...)
 	if err != nil {
 		return jsend.NewError("failed Exec", err, http.StatusInternalServerError)
 	}
+
+	if rows, _ := res.RowsAffected(); rows == 0 {
+		return jsend.NewError("wallet not found", nil, http.StatusNotFound)
+	}
+
 	return nil
 }
 
@@ -144,20 +173,24 @@ func (wsql *walletsSQL) GetByIDSQL(id int) (string, []interface{}, error) {
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
+func (wsql *walletsSQL) GetBySanitizedNameSQL(userID int, name string) (string, []interface{}, error) {
+	return sq.Select("*").
+		From(tableWallets).
+		Where(sq.Eq{"sanitized_name": name, "user_id": userID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+}
 func (wsql *walletsSQL) UpdateByIDSQL(wallet *domain.Wallet) (string, []interface{}, error) {
 	return sq.Update(tableWallets).
 		Set("name", wallet.Name).
 		Set("balance", wallet.Balance).
-		Where(sq.Eq{"id": wallet.ID}).
+		Where(sq.Eq{"id": wallet.ID, "user_id": wallet.UserID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
 func (wsql *walletsSQL) DeleteByIDSQL(id int, userID int) (string, []interface{}, error) {
 	return sq.Delete(tableWallets).
-		Where(sq.And{
-			sq.Eq{"id": id},
-			sq.Eq{"user_id": userID},
-		}).
+		Where(sq.Eq{"id": id, "user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

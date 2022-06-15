@@ -43,6 +43,12 @@ func (c *walletsController) Create(ctx *gin.Context) {
 		return
 	}
 
+	wallet, err := c.srv.GetByName(body.UserID, body.Name)
+	if wallet != nil {
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("wallet already exists"))
+		return
+	}
+
 	response, err := c.srv.Create(&body)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
@@ -90,16 +96,13 @@ func (c *walletsController) GetByID(ctx *gin.Context) {
 }
 func (c *walletsController) GetAll(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
-	filterName := ctx.Query(defines.ParamName)
+
+	search := ctx.Query(defines.QuerySearch)
 
 	var response *[]domain.WalletDTO
 	var err error
 
-	if filterName != "" {
-		response, err = c.srv.GetByName(userID, filterName)
-	} else {
-		response, err = c.srv.GetAll(userID)
-	}
+	response, err = c.srv.GetAll(userID, search)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)
@@ -123,6 +126,11 @@ func (c *walletsController) UpdateByID(ctx *gin.Context) {
 	}
 	body.ID = id
 	body.UserID = ctx.GetInt(defines.ParamUserID)
+
+	if !body.IsValid() {
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		return
+	}
 
 	response, err := c.srv.UpdateByID(&body)
 
