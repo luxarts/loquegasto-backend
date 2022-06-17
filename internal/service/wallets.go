@@ -4,9 +4,6 @@ import (
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/utils/sanitizer"
-	"net/http"
-
-	"github.com/luxarts/jsend-go"
 )
 
 type WalletsService interface {
@@ -50,10 +47,6 @@ func (s *walletsService) GetByID(userID int, id int) (*domain.WalletDTO, error) 
 	wallet, err := s.repo.GetByID(id, userID)
 	if err != nil {
 		return nil, err
-	}
-
-	if wallet.UserID != userID {
-		return nil, jsend.NewError("forbidden", nil, http.StatusForbidden)
 	}
 
 	return wallet.ToDTO(), nil

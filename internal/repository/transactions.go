@@ -16,13 +16,13 @@ import (
 )
 
 const (
-	tableTransactions = "backend.transactions"
+	tableTransactions = "core.transactions"
 )
 
 type TransactionsRepository interface {
 	Create(transaction *domain.Transaction) (*domain.Transaction, error)
 	UpdateByMsgID(transaction *domain.Transaction) (*domain.Transaction, error)
-	GetAllByUserID(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error)
+	GetAll(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error)
 	GetByMsgID(msgID int, userID int) (*domain.Transaction, error)
 }
 
@@ -63,8 +63,8 @@ func (r *transactionsRepository) UpdateByMsgID(transaction *domain.Transaction) 
 	}
 	return transaction, nil
 }
-func (r *transactionsRepository) GetAllByUserID(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error) {
-	query, args, err := r.sqlBuilder.GetAllByUserIDSQL(userID, filters)
+func (r *transactionsRepository) GetAll(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error) {
+	query, args, err := r.sqlBuilder.GetAllSQL(userID, filters)
 
 	rows, err := r.db.Queryx(query, args...)
 	if err != nil {
@@ -125,7 +125,7 @@ func (tsql *transactionsSQL) UpdateByMsgIDSQL(transaction *domain.Transaction) (
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (tsql *transactionsSQL) GetAllByUserIDSQL(userID int, filters *domain.TransactionFilters) (string, []interface{}, error) {
+func (tsql *transactionsSQL) GetAllSQL(userID int, filters *domain.TransactionFilters) (string, []interface{}, error) {
 	q := sq.Select("*").
 		From(tableTransactions)
 
@@ -138,7 +138,7 @@ func (tsql *transactionsSQL) GetAllByUserIDSQL(userID int, filters *domain.Trans
 	} else {
 		q = q.Where(sq.Eq{"user_id": userID})
 	}
-
+	q = q.OrderBy("created_at DESC")
 	return q.PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

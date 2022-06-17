@@ -44,7 +44,7 @@ func mapRoutes(r *gin.Engine) {
 	catRepo := repository.NewCategoriesRepository(db)
 
 	// Services init
-	txnSrv := service.NewTransactionsService(txnRepo, walletsRepo)
+	txnSrv := service.NewTransactionsService(txnRepo, walletsRepo, catRepo)
 	usersSrv := service.NewUsersService(usersRepo)
 	walletsSrv := service.NewWalletsService(walletsRepo)
 	catSrv := service.NewCategoriesService(catRepo)
@@ -62,7 +62,7 @@ func mapRoutes(r *gin.Engine) {
 	// Transactions
 	r.POST(defines.EndpointTransactionsCreate, authMw.Check, txnCtrl.Create)
 	r.PUT(defines.EndpointTransactionsUpdateByMsgID, authMw.Check, txnCtrl.UpdateByMsgID)
-	r.GET(defines.EndpointTransactionsGetAllByUserID, authMw.Check, txnCtrl.GetAllByUserID)
+	r.GET(defines.EndpointTransactionsGetAll, authMw.Check, txnCtrl.GetAll)
 	// Users
 	r.POST(defines.EndpointUsersCreate, authMw.Check, usersCtrl.Create)
 	r.GET(defines.EndpointUsersGet, authMw.Check, usersCtrl.Get)

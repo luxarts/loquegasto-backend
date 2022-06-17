@@ -14,7 +14,7 @@ import (
 type TransactionsController interface {
 	Create(ctx *gin.Context)
 	UpdateByMsgID(ctx *gin.Context)
-	GetAllByUserID(ctx *gin.Context)
+	GetAll(ctx *gin.Context)
 }
 
 type transactionsController struct {
@@ -52,7 +52,6 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
 }
 func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
-	userID := ctx.GetInt(defines.ParamUserID)
 	msgIDStr := ctx.Param(defines.ParamMsgID)
 	msgID, err := strconv.Atoi(msgIDStr)
 	if err != nil {
@@ -73,8 +72,9 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body: msg_id doesn't match"))
 		return
 	}
+	body.UserID = ctx.GetInt(defines.ParamUserID)
 
-	response, err := c.srv.UpdateByMsgID(userID, &body)
+	response, err := c.srv.UpdateByMsgID(&body)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)
@@ -83,12 +83,21 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
-func (c *transactionsController) GetAllByUserID(ctx *gin.Context) {
+func (c *transactionsController) GetAll(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
 
-	var filters domain.TransactionFilters = ctx.QueryMap("filters")
+	filters := make(domain.TransactionFilters)
 
-	response, err := c.srv.GetAllByUserID(userID, &filters)
+	walletID, _ := ctx.GetQuery(defines.QueryWalletID)
+	if walletID != "" {
+		filters[defines.QueryWalletID] = walletID
+	}
+	categoryID, _ := ctx.GetQuery(defines.QueryCategoryID)
+	if categoryID != "" {
+		filters[defines.QueryCategoryID] = categoryID
+	}
+
+	response, err := c.srv.GetAll(userID, &filters)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)

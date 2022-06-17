@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"loquegasto-backend/internal/defines"
 	"time"
 )
 
@@ -70,3 +71,13 @@ func (dto *TransactionDTO) ToTransaction() *Transaction {
 }
 
 type TransactionFilters map[string]string
+
+func (tf *TransactionFilters) IsValid() bool {
+	for key := range *tf {
+		if key != defines.QueryWalletID &&
+			key != defines.QueryCategoryID {
+			return false
+		}
+	}
+	return true
+}

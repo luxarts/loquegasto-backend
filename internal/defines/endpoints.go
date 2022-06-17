@@ -4,9 +4,9 @@ const (
 	EndpointPing = "/ping"
 
 	// Transactions
-	EndpointTransactionsCreate         = "/transactions"
-	EndpointTransactionsUpdateByMsgID  = "/transaction/:" + ParamMsgID
-	EndpointTransactionsGetAllByUserID = "/transactions"
+	EndpointTransactionsCreate        = "/transactions"
+	EndpointTransactionsUpdateByMsgID = "/transaction/:" + ParamMsgID
+	EndpointTransactionsGetAll        = "/transactions"
 
 	// Users
 	EndpointUsersCreate = "/users"

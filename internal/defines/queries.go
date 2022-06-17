@@ -1,5 +1,6 @@
 package defines
 
 const (
-	QuerySearch = "search"
+	QueryWalletID   = "wallet_id"
+	QueryCategoryID = "category_id"
 )

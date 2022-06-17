@@ -20,6 +20,7 @@ const (
 type CategoriesRepository interface {
 	Create(category *domain.Category) (*domain.Category, error)
 	GetAll(userID int) (*[]domain.Category, error)
+	GetByID(id int, userID int) (*domain.Category, error)
 	GetByName(name string, userID int) (*domain.Category, error)
 	GetByEmoji(emoji string, userID int) (*domain.Category, error)
 	DeleteByID(id int, userID int) error
@@ -75,10 +76,27 @@ func (r *categoriesRepository) GetAll(userID int) (*[]domain.Category, error) {
 
 	return &results, nil
 }
+func (r *categoriesRepository) GetByID(id int, userID int) (*domain.Category, error) {
+	query, args, err := r.sqlBuilder.GetByIDSQL(id, userID)
+	if err != nil {
+		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
+	}
+
+	var category domain.Category
+	err = r.db.QueryRowx(query, args...).StructScan(&category)
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return nil, jsend.NewError("category not found", nil, http.StatusNotFound)
+		}
+		return nil, jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
+	}
+
+	return &category, nil
+}
 func (r *categoriesRepository) GetByName(name string, userID int) (*domain.Category, error) {
 	query, args, err := r.sqlBuilder.GetByNameSQL(name, userID)
 	if err != nil {
-		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed GetByNameSQL", err, http.StatusInternalServerError)
 	}
 
 	var category domain.Category
@@ -160,6 +178,16 @@ func (csql *categoriesSQL) GetAllSQL(userID int) (string, []interface{}, error) 
 	return sq.Select("*").
 		From(tableCategories).
 		Where(sq.Eq{"user_id": userID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+}
+func (csql *categoriesSQL) GetByIDSQL(id int, userID int) (string, []interface{}, error) {
+	return sq.Select("*").
+		From(tableCategories).
+		Where(sq.And{
+			sq.Eq{"id": id},
+			sq.Eq{"user_id": userID},
+		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
