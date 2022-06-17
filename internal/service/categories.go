@@ -12,6 +12,7 @@ type CategoriesService interface {
 	GetByName(name string, userID int) (*domain.CategoryDTO, error)
 	GetByEmoji(emoji string, userID int) (*domain.CategoryDTO, error)
 	DeleteByID(id int, userID int) error
+	UpdateByID(categoryDTO *domain.CategoryDTO) (*domain.CategoryDTO, error)
 }
 type categoriesService struct {
 	repo repository.CategoriesRepository
@@ -40,7 +41,7 @@ func (s *categoriesService) GetAll(userID int) (*[]domain.CategoryDTO, error) {
 		return nil, err
 	}
 
-	var categoryDTOs []domain.CategoryDTO
+	var categoryDTOs = make([]domain.CategoryDTO, 0)
 	for _, category := range *categories {
 		categoryDTOs = append(categoryDTOs, *category.ToDTO())
 	}
@@ -67,4 +68,16 @@ func (s *categoriesService) GetByEmoji(emoji string, userID int) (*domain.Catego
 }
 func (s *categoriesService) DeleteByID(id int, userID int) error {
 	return s.repo.DeleteByID(id, userID)
+}
+func (s *categoriesService) UpdateByID(categoryDTO *domain.CategoryDTO) (*domain.CategoryDTO, error) {
+	category := categoryDTO.ToCategory()
+
+	category.SanitizedName = sanitizer.Sanitize(category.Name)
+
+	category, err := s.repo.UpdateByID(category)
+	if err != nil {
+		return nil, err
+	}
+
+	return category.ToDTO(), nil
 }

@@ -23,4 +23,5 @@ const (
 	EndpointCategoriesCreate     = "/categories"
 	EndpointCategoriesGetAll     = "/categories"
 	EndpointCategoriesDeleteByID = "/category/:" + ParamID
+	EndpointCategoriesUpdateByID = "/category/:" + ParamID
 )

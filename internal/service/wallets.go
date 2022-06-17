@@ -10,11 +10,11 @@ import (
 )
 
 type WalletsService interface {
-	Create(accountDTO *domain.WalletDTO) (*domain.WalletDTO, error)
+	Create(walletDTO *domain.WalletDTO) (*domain.WalletDTO, error)
 	GetByName(userID int, name string) (*domain.WalletDTO, error)
 	GetByID(userID int, id int) (*domain.WalletDTO, error)
-	GetAll(userID int, search string) (*[]domain.WalletDTO, error)
-	UpdateByID(accountDTO *domain.WalletDTO) (*domain.WalletDTO, error)
+	GetAll(userID int) (*[]domain.WalletDTO, error)
+	UpdateByID(walletDTO *domain.WalletDTO) (*domain.WalletDTO, error)
 	DeleteByID(id int, userID int) error
 }
 type walletsService struct {
@@ -39,7 +39,7 @@ func (s *walletsService) Create(walletDTO *domain.WalletDTO) (*domain.WalletDTO,
 	return wallet.ToDTO(), nil
 }
 func (s *walletsService) GetByName(userID int, name string) (*domain.WalletDTO, error) {
-	wallet, err := s.repo.GetBySanitizedName(userID, sanitizer.Sanitize(name))
+	wallet, err := s.repo.GetBySanitizedName(sanitizer.Sanitize(name), userID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (s *walletsService) GetByName(userID int, name string) (*domain.WalletDTO, 
 	return wallet.ToDTO(), nil
 }
 func (s *walletsService) GetByID(userID int, id int) (*domain.WalletDTO, error) {
-	wallet, err := s.repo.GetByID(id)
+	wallet, err := s.repo.GetByID(id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -58,22 +58,13 @@ func (s *walletsService) GetByID(userID int, id int) (*domain.WalletDTO, error) 
 
 	return wallet.ToDTO(), nil
 }
-func (s *walletsService) GetAll(userID int, search string) (*[]domain.WalletDTO, error) {
+func (s *walletsService) GetAll(userID int) (*[]domain.WalletDTO, error) {
 	var err error
 	var wallets *[]domain.Wallet
 
-	if search != "" {
-		var w *domain.Wallet
-		w, err = s.repo.GetBySanitizedName(userID, sanitizer.Sanitize(search))
-		if err != nil {
-			return nil, err
-		}
-		wallets = &[]domain.Wallet{*w}
-	} else {
-		wallets, err = s.repo.GetAllByUserID(userID)
-		if err != nil {
-			return nil, err
-		}
+	wallets, err = s.repo.GetAllByUserID(userID)
+	if err != nil {
+		return nil, err
 	}
 
 	var walletDTOs = make([]domain.WalletDTO, 0)
@@ -85,6 +76,8 @@ func (s *walletsService) GetAll(userID int, search string) (*[]domain.WalletDTO,
 }
 func (s *walletsService) UpdateByID(walletDTO *domain.WalletDTO) (*domain.WalletDTO, error) {
 	wallet := walletDTO.ToWallet()
+
+	wallet.SanitizedName = sanitizer.Sanitize(wallet.Name)
 
 	wallet, err := s.repo.UpdateByID(wallet)
 	if err != nil {

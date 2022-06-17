@@ -76,6 +76,7 @@ func mapRoutes(r *gin.Engine) {
 	r.POST(defines.EndpointCategoriesCreate, authMw.Check, catCtrl.Create)
 	r.GET(defines.EndpointCategoriesGetAll, authMw.Check, catCtrl.GetAll)
 	r.DELETE(defines.EndpointCategoriesDeleteByID, authMw.Check, catCtrl.DeleteByID)
+	r.PUT(defines.EndpointCategoriesUpdateByID, authMw.Check, catCtrl.UpdateByID)
 
 	r.GET("/token/:userID", generateToken)
 

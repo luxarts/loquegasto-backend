@@ -32,7 +32,7 @@ func (s *transactionsService) Create(transactionDTO *domain.TransactionDTO) (*do
 	}
 
 	// Update balance
-	wallet, err := s.walletRepo.GetByID(transaction.WalletID)
+	wallet, err := s.walletRepo.GetByID(transaction.WalletID, transaction.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (s *transactionsService) UpdateByMsgID(userID int, transactionDTO *domain.T
 		return nil, err
 	}
 
-	wallet, err := s.walletRepo.GetByID(transaction.WalletID)
+	wallet, err := s.walletRepo.GetByID(transaction.WalletID, transaction.UserID)
 	if err != nil {
 		return nil, err
 	}

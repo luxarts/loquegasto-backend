@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	tableCategories = "backend.categories"
+	tableCategories = "core.categories"
 )
 
 type CategoriesRepository interface {
@@ -23,6 +23,7 @@ type CategoriesRepository interface {
 	GetByName(name string, userID int) (*domain.Category, error)
 	GetByEmoji(emoji string, userID int) (*domain.Category, error)
 	DeleteByID(id int, userID int) error
+	UpdateByID(category *domain.Category) (*domain.Category, error)
 }
 
 type categoriesRepository struct {
@@ -124,6 +125,24 @@ func (r *categoriesRepository) DeleteByID(id int, userID int) error {
 
 	return nil
 }
+func (r *categoriesRepository) UpdateByID(category *domain.Category) (*domain.Category, error) {
+	query, args, err := r.sqlBuilder.UpdateByIDSQL(category)
+
+	if err != nil {
+		return nil, jsend.NewError("failed UpdateSQL", err, http.StatusInternalServerError)
+	}
+
+	res, err := r.db.Exec(query, args...)
+	if err != nil {
+		return nil, jsend.NewError("failed Exec", err, http.StatusInternalServerError)
+	}
+
+	if rows, _ := res.RowsAffected(); rows == 0 {
+		return nil, jsend.NewError("category not found", nil, http.StatusNotFound)
+	}
+
+	return category, nil
+}
 
 // SQL Builders
 type categoriesSQL struct{}
@@ -170,6 +189,15 @@ func (csql *categoriesSQL) DeleteByIDSQL(id int, userID int) (string, []interfac
 			sq.Eq{"id": id},
 			sq.Eq{"user_id": userID},
 		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+}
+func (wsql *categoriesSQL) UpdateByIDSQL(category *domain.Category) (string, []interface{}, error) {
+	return sq.Update(tableCategories).
+		Set("name", category.Name).
+		Set("sanitized_name", category.SanitizedName).
+		Set("emoji", category.Emoji).
+		Where(sq.Eq{"id": category.ID, "user_id": category.UserID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

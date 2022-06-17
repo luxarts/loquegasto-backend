@@ -13,7 +13,6 @@ import (
 
 type WalletsController interface {
 	Create(ctx *gin.Context)
-	GetByName(ctx *gin.Context)
 	GetByID(ctx *gin.Context)
 	GetAll(ctx *gin.Context)
 	UpdateByID(ctx *gin.Context)
@@ -43,7 +42,12 @@ func (c *walletsController) Create(ctx *gin.Context) {
 		return
 	}
 
+	// Check if name already used
 	wallet, err := c.srv.GetByName(body.UserID, body.Name)
+	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
+		ctx.JSON(*err.Code, err)
+		return
+	}
 	if wallet != nil {
 		ctx.JSON(http.StatusBadRequest, jsend.NewFail("wallet already exists"))
 		return
@@ -57,24 +61,6 @@ func (c *walletsController) Create(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
-}
-func (c *walletsController) GetByName(ctx *gin.Context) {
-	userID := ctx.GetInt(defines.ParamUserID)
-	name := ctx.Query(defines.ParamName)
-
-	if name == "" {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("missing name query param"))
-		return
-	}
-
-	response, err := c.srv.GetByName(userID, name)
-
-	if err, isError := err.(*jsend.Body); isError && err != nil {
-		ctx.JSON(*err.Code, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
 func (c *walletsController) GetByID(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
@@ -97,12 +83,14 @@ func (c *walletsController) GetByID(ctx *gin.Context) {
 func (c *walletsController) GetAll(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
 
-	search := ctx.Query(defines.QuerySearch)
-
-	var response *[]domain.WalletDTO
+	var response interface{}
 	var err error
 
-	response, err = c.srv.GetAll(userID, search)
+	if name, exists := ctx.GetQuery(defines.ParamName); exists {
+		response, err = c.srv.GetByName(userID, name)
+	} else {
+		response, err = c.srv.GetAll(userID)
+	}
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)
@@ -129,6 +117,17 @@ func (c *walletsController) UpdateByID(ctx *gin.Context) {
 
 	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		return
+	}
+
+	// Check if name already used
+	wallet, err := c.srv.GetByName(body.UserID, body.Name)
+	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
+		ctx.JSON(*err.Code, err)
+		return
+	}
+	if wallet != nil {
+		ctx.JSON(http.StatusBadRequest, jsend.NewFail("wallet already exists"))
 		return
 	}
 

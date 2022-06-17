@@ -17,11 +17,11 @@ const (
 )
 
 type WalletRepository interface {
-	Create(account *domain.Wallet) (*domain.Wallet, error)
+	Create(wallet *domain.Wallet) (*domain.Wallet, error)
 	GetAllByUserID(userID int) (*[]domain.Wallet, error)
-	GetBySanitizedName(userID int, name string) (*domain.Wallet, error)
-	GetByID(id int) (*domain.Wallet, error)
-	UpdateByID(account *domain.Wallet) (*domain.Wallet, error)
+	GetBySanitizedName(name string, userID int) (*domain.Wallet, error)
+	GetByID(id int, userID int) (*domain.Wallet, error)
+	UpdateByID(wallet *domain.Wallet) (*domain.Wallet, error)
 	DeleteByID(id int, userID int) error
 }
 type walletRepository struct {
@@ -74,8 +74,8 @@ func (r *walletRepository) GetAllByUserID(userID int) (*[]domain.Wallet, error) 
 
 	return &results, nil
 }
-func (r *walletRepository) GetBySanitizedName(userID int, name string) (*domain.Wallet, error) {
-	query, args, err := r.sqlBuilder.GetBySanitizedNameSQL(userID, name)
+func (r *walletRepository) GetBySanitizedName(name string, userID int) (*domain.Wallet, error) {
+	query, args, err := r.sqlBuilder.GetBySanitizedNameSQL(name, userID)
 
 	if err != nil {
 		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
@@ -92,8 +92,8 @@ func (r *walletRepository) GetBySanitizedName(userID int, name string) (*domain.
 
 	return &wallet, nil
 }
-func (r *walletRepository) GetByID(id int) (*domain.Wallet, error) {
-	query, args, err := r.sqlBuilder.GetByIDSQL(id)
+func (r *walletRepository) GetByID(id int, userID int) (*domain.Wallet, error) {
+	query, args, err := r.sqlBuilder.GetByIDSQL(id, userID)
 
 	if err != nil {
 		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
@@ -166,14 +166,14 @@ func (wsql *walletsSQL) GetAllByUserIDSQL(userID int) (string, []interface{}, er
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) GetByIDSQL(id int) (string, []interface{}, error) {
+func (wsql *walletsSQL) GetByIDSQL(id int, userID int) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"id": id, "user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) GetBySanitizedNameSQL(userID int, name string) (string, []interface{}, error) {
+func (wsql *walletsSQL) GetBySanitizedNameSQL(name string, userID int) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
 		Where(sq.Eq{"sanitized_name": name, "user_id": userID}).
