@@ -1,15 +1,8 @@
 # loquegasto-backend
 Backend del bot de Telegram LoQueGasto
 
-# Examples
-### POST Transaction
-```curl
-curl --location --request POST 'localhost:8080/transaction' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "msg_id": 123,
-    "amount": 1000,
-    "description": "Some item",
-    "source": "debit"
-}'
+# Envs to set
+```
+JWT_SECRET=<your_secret_base64encoded>
+DATABASE_URL=postgresql://<user>:<password>@<url>:<port>/<db>?sslmode=disable
 ```
