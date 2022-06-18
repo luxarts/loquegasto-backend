@@ -49,7 +49,7 @@ func (c *walletsController) Create(ctx *gin.Context) {
 		return
 	}
 	if wallet != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("wallet already exists"))
+		ctx.JSON(http.StatusConflict, jsend.NewFail("wallet already exists"))
 		return
 	}
 
@@ -127,7 +127,7 @@ func (c *walletsController) UpdateByID(ctx *gin.Context) {
 		return
 	}
 	if wallet != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("wallet already exists"))
+		ctx.JSON(http.StatusConflict, jsend.NewFail("wallet already exists"))
 		return
 	}
 

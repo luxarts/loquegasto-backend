@@ -48,7 +48,7 @@ func (c *categoriesController) Create(ctx *gin.Context) {
 		return
 	}
 	if category != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("category name already exists"))
+		ctx.JSON(http.StatusConflict, jsend.NewFail("category name already exists"))
 		return
 	}
 
@@ -58,7 +58,7 @@ func (c *categoriesController) Create(ctx *gin.Context) {
 		return
 	}
 	if category != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("category emoji already exists"))
+		ctx.JSON(http.StatusConflict, jsend.NewFail("category emoji already exists"))
 		return
 	}
 
@@ -138,7 +138,7 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 		return
 	}
 	if category != nil && category.ID != body.ID {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("category name already exists"))
+		ctx.JSON(http.StatusConflict, jsend.NewFail("category name already exists"))
 		return
 	}
 
@@ -149,7 +149,7 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 		return
 	}
 	if category != nil && category.ID != body.ID {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("category emoji already exists"))
+		ctx.JSON(http.StatusConflict, jsend.NewFail("category emoji already exists"))
 		return
 	}
 

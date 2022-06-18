@@ -38,6 +38,18 @@ func (c *userController) Create(ctx *gin.Context) {
 		return
 	}
 
+	user, err := c.srv.GetByID(body.ID)
+
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
+		return
+	}
+
+	if user != nil {
+		ctx.JSON(http.StatusConflict, jsend.NewFail("user already exists"))
+		return
+	}
+
 	response, err := c.srv.Create(&body)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
