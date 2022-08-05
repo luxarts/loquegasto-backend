@@ -31,12 +31,12 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 	var body domain.TransactionDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
 	if !body.IsValid() {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
@@ -55,23 +55,20 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 	msgIDStr := ctx.Param(defines.ParamMsgID)
 	msgID, err := strconv.Atoi(msgIDStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid message id"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidMsgID)
 		return
 	}
 
 	var body domain.TransactionDTO
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
-	if !body.IsValidForUpdate() {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+	if !body.IsValidForUpdate() || body.MsgID != msgID {
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
-	if body.MsgID != msgID {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body: msg_id doesn't match"))
-		return
-	}
+
 	body.UserID = ctx.GetInt(defines.ParamUserID)
 
 	response, err := c.srv.UpdateByMsgID(&body)

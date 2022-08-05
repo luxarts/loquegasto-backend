@@ -31,14 +31,14 @@ func (c *walletsController) Create(ctx *gin.Context) {
 	var body domain.WalletDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
 	body.UserID = ctx.GetInt(defines.ParamUserID)
 
 	if !body.IsValid() {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (c *walletsController) Create(ctx *gin.Context) {
 		return
 	}
 	if wallet != nil {
-		ctx.JSON(http.StatusConflict, jsend.NewFail("wallet already exists"))
+		ctx.JSON(http.StatusConflict, defines.ErrNameAlreadyExists)
 		return
 	}
 
@@ -68,7 +68,7 @@ func (c *walletsController) GetByID(ctx *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid id"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
 
@@ -103,20 +103,20 @@ func (c *walletsController) UpdateByID(ctx *gin.Context) {
 	var body domain.WalletDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 	idStr := ctx.Param(defines.ParamID)
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid id"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
 	body.ID = id
 	body.UserID = ctx.GetInt(defines.ParamUserID)
 
 	if !body.IsValid() {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
@@ -127,7 +127,7 @@ func (c *walletsController) UpdateByID(ctx *gin.Context) {
 		return
 	}
 	if wallet != nil {
-		ctx.JSON(http.StatusConflict, jsend.NewFail("wallet already exists"))
+		ctx.JSON(http.StatusConflict, defines.ErrNameAlreadyExists)
 		return
 	}
 
@@ -144,7 +144,7 @@ func (c *walletsController) DeleteByID(ctx *gin.Context) {
 	idStr := ctx.Param(defines.ParamID)
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid id"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
 	userID := ctx.GetInt(defines.ParamUserID)

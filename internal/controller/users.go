@@ -27,14 +27,14 @@ func (c *userController) Create(ctx *gin.Context) {
 	var body domain.UserDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
 	body.ID = ctx.GetInt(defines.ParamUserID)
 
 	if !body.IsValid() {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
@@ -46,7 +46,7 @@ func (c *userController) Create(ctx *gin.Context) {
 	}
 
 	if user != nil {
-		ctx.JSON(http.StatusConflict, jsend.NewFail("user already exists"))
+		ctx.JSON(http.StatusConflict, defines.ErrUserAlreadyExists)
 		return
 	}
 

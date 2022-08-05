@@ -91,7 +91,7 @@ func generateToken(ctx *gin.Context) {
 	userID := ctx.Param("userID")
 	userIDInt, err := strconv.Atoi(userID)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid user ID"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
 	token := jwt.GenerateToken(nil, &jwt.Payload{Subject: userIDInt})

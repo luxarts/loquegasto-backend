@@ -31,14 +31,14 @@ func (c *categoriesController) Create(ctx *gin.Context) {
 	var body domain.CategoryDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
 	body.UserID = ctx.GetInt(defines.ParamUserID)
 
 	if !body.IsValid() {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
@@ -48,7 +48,7 @@ func (c *categoriesController) Create(ctx *gin.Context) {
 		return
 	}
 	if category != nil {
-		ctx.JSON(http.StatusConflict, jsend.NewFail("category name already exists"))
+		ctx.JSON(http.StatusConflict, defines.ErrNameAlreadyExists)
 		return
 	}
 
@@ -58,7 +58,7 @@ func (c *categoriesController) Create(ctx *gin.Context) {
 		return
 	}
 	if category != nil {
-		ctx.JSON(http.StatusConflict, jsend.NewFail("category emoji already exists"))
+		ctx.JSON(http.StatusConflict, defines.ErrEmojiAlreadyExists)
 		return
 	}
 
@@ -96,7 +96,7 @@ func (c *categoriesController) DeleteByID(ctx *gin.Context) {
 	idStr := ctx.Param(defines.ParamID)
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid id"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
 	userID := ctx.GetInt(defines.ParamUserID)
@@ -114,20 +114,20 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 	var body domain.CategoryDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 	idStr := ctx.Param(defines.ParamID)
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid id"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
 	body.ID = id
 	body.UserID = ctx.GetInt(defines.ParamUserID)
 
 	if !body.IsValid() {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
@@ -138,7 +138,7 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 		return
 	}
 	if category != nil && category.ID != body.ID {
-		ctx.JSON(http.StatusConflict, jsend.NewFail("category name already exists"))
+		ctx.JSON(http.StatusConflict, defines.ErrNameAlreadyExists)
 		return
 	}
 
@@ -149,7 +149,7 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 		return
 	}
 	if category != nil && category.ID != body.ID {
-		ctx.JSON(http.StatusConflict, jsend.NewFail("category emoji already exists"))
+		ctx.JSON(http.StatusConflict, defines.ErrEmojiAlreadyExists)
 		return
 	}
 
