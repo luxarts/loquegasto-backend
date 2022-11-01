@@ -14,7 +14,7 @@ import (
 type TransactionsController interface {
 	Create(ctx *gin.Context)
 	UpdateByMsgID(ctx *gin.Context)
-	GetAllByUserID(ctx *gin.Context)
+	GetAll(ctx *gin.Context)
 }
 
 type transactionsController struct {
@@ -31,12 +31,12 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 	var body domain.TransactionDTO
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
 	if !body.IsValid() {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
@@ -44,49 +44,60 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 
 	response, err := c.srv.Create(&body)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
 }
 func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
-	userID := ctx.GetInt(defines.ParamUserID)
 	msgIDStr := ctx.Param(defines.ParamMsgID)
 	msgID, err := strconv.Atoi(msgIDStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid message ID"))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidMsgID)
 		return
 	}
 
 	var body domain.TransactionDTO
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, jsend.NewError("shouldbindjson-error", err))
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
+		return
+	}
+	if !body.IsValidForUpdate() || body.MsgID != msgID {
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
-	if !body.IsValidForUpdate() {
-		ctx.JSON(http.StatusBadRequest, jsend.NewFail("invalid body"))
-		return
-	}
+	body.UserID = ctx.GetInt(defines.ParamUserID)
 
-	response, err := c.srv.UpdateByMsgID(userID, msgID, &body)
+	response, err := c.srv.UpdateByMsgID(&body)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
-func (c *transactionsController) GetAllByUserID(ctx *gin.Context) {
+func (c *transactionsController) GetAll(ctx *gin.Context) {
 	userID := ctx.GetInt(defines.ParamUserID)
 
-	response, err := c.srv.GetAllByUserID(userID)
+	filters := make(domain.TransactionFilters)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	walletID, _ := ctx.GetQuery(defines.QueryWalletID)
+	if walletID != "" {
+		filters[defines.QueryWalletID] = walletID
+	}
+	categoryID, _ := ctx.GetQuery(defines.QueryCategoryID)
+	if categoryID != "" {
+		filters[defines.QueryCategoryID] = categoryID
+	}
+
+	response, err := c.srv.GetAll(userID, &filters)
+
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
 		return
 	}
 
