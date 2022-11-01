@@ -59,29 +59,36 @@ func mapRoutes(r *gin.Engine) {
 	authMw := middleware.NewAuthMiddleware()
 
 	// Endpoints
-	// Transactions
-	r.POST(defines.EndpointTransactionsCreate, authMw.Check, txnCtrl.Create)
-	r.PUT(defines.EndpointTransactionsUpdateByMsgID, authMw.Check, txnCtrl.UpdateByMsgID)
-	r.GET(defines.EndpointTransactionsGetAll, authMw.Check, txnCtrl.GetAll)
-	// Users
-	r.POST(defines.EndpointUsersCreate, authMw.Check, usersCtrl.Create)
-	r.GET(defines.EndpointUsersGet, authMw.Check, usersCtrl.Get)
-	// Wallets
-	r.POST(defines.EndpointWalletsCreate, authMw.Check, walletsCtrl.Create)
-	r.GET(defines.EndpointWalletsGetAll, authMw.Check, walletsCtrl.GetAll)
-	r.GET(defines.EndpointWalletsGetByID, authMw.Check, walletsCtrl.GetByID)
-	r.PUT(defines.EndpointWalletsUpdateByID, authMw.Check, walletsCtrl.UpdateByID)
-	r.DELETE(defines.EndpointWalletsDeleteByID, authMw.Check, walletsCtrl.DeleteByID)
-	// Categories
-	r.POST(defines.EndpointCategoriesCreate, authMw.Check, catCtrl.Create)
-	r.GET(defines.EndpointCategoriesGetAll, authMw.Check, catCtrl.GetAll)
-	r.DELETE(defines.EndpointCategoriesDeleteByID, authMw.Check, catCtrl.DeleteByID)
-	r.PUT(defines.EndpointCategoriesUpdateByID, authMw.Check, catCtrl.UpdateByID)
-
 	r.GET("/token/:userID", generateToken)
 
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)
+
+	// Authorized endpoints
+	authorized := r.Group("/")
+	authorized.Use(authMw.Check)
+
+	// Transactions
+	authorized.POST(defines.EndpointTransactionsCreate, txnCtrl.Create)
+	authorized.PUT(defines.EndpointTransactionsUpdateByMsgID, txnCtrl.UpdateByMsgID)
+	authorized.GET(defines.EndpointTransactionsGetAll, txnCtrl.GetAll)
+
+	// Users
+	authorized.POST(defines.EndpointUsersCreate, usersCtrl.Create)
+	authorized.GET(defines.EndpointUsersGet, usersCtrl.Get)
+
+	// Wallets
+	authorized.POST(defines.EndpointWalletsCreate, walletsCtrl.Create)
+	authorized.GET(defines.EndpointWalletsGetAll, walletsCtrl.GetAll)
+	authorized.GET(defines.EndpointWalletsGetByID, walletsCtrl.GetByID)
+	authorized.PUT(defines.EndpointWalletsUpdateByID, walletsCtrl.UpdateByID)
+	authorized.DELETE(defines.EndpointWalletsDeleteByID, walletsCtrl.DeleteByID)
+
+	// Categories
+	authorized.POST(defines.EndpointCategoriesCreate, catCtrl.Create)
+	authorized.GET(defines.EndpointCategoriesGetAll, catCtrl.GetAll)
+	authorized.DELETE(defines.EndpointCategoriesDeleteByID, catCtrl.DeleteByID)
+	authorized.PUT(defines.EndpointCategoriesUpdateByID, catCtrl.UpdateByID)
 }
 
 func healthCheck(ctx *gin.Context) {

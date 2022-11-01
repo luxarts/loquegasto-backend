@@ -1,10 +1,102 @@
 {
 	"info": {
-		"_postman_id": "6d4292dd-5527-4f8d-9e87-228b67a09e75",
+		"_postman_id": "8bf5aea8-2fc1-49db-88a9-0338e3970624",
 		"name": "LoQueGasto",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9999648"
 	},
 	"item": [
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Add Transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"msg_id\": 127,\r\n    \"amount\": -0.01,\r\n    \"description\": \"Alguna compra\",\r\n    \"wallet_id\": 8,\r\n    \"created_at\": \"2021-12-31T23:59:59.999999Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/transaction",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"transaction"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Transaction",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\": 2345,\r\n    \"description\": \"Some other item\",\r\n    \"wallet_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/transactions/:msgID",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"transactions",
+								":msgID"
+							],
+							"variable": [
+								{
+									"key": "msgID",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all transactions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/transactions?filters[wallet_id]=7&filters[category_id]=7",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "filters[wallet_id]",
+									"value": "7"
+								},
+								{
+									"key": "filters[category_id]",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
 		{
 			"name": "Users",
 			"item": [
@@ -15,7 +107,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"id\": 1234,\n    \"chat_id\": 1234,\n    \"created_at\": \"2022-06-09T09:04:09.494Z\"\n}",
+							"raw": "{\r\n    \"chat_id\": 709248859,\r\n    \"created_at\": \"2021-12-31T23:59:59.999999Z\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -23,12 +115,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/users",
+							"raw": "{{URL}}/user",
 							"host": [
-								"{{baseURL}}"
+								"{{URL}}"
 							],
 							"path": [
-								"users"
+								"user"
 							]
 						}
 					},
@@ -40,9 +132,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}/user",
+							"raw": "{{URL}}/user",
 							"host": [
-								"{{baseURL}}"
+								"{{URL}}"
 							],
 							"path": [
 								"user"
@@ -63,7 +155,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Efectivo\",\n    \"balance\": 1234.56,\n    \"created_at\": \"2022-06-09T09:04:09.494Z\"\n}",
+							"raw": "{\r\n    \"name\": \"Border\",\r\n    \"balance\": 4294967296.99,\r\n    \"created_at\": \"2021-12-31T23:59:59.999999Z\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -71,53 +163,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/wallets",
+							"raw": "{{URL}}/wallet",
 							"host": [
-								"{{baseURL}}"
+								"{{URL}}"
 							],
 							"path": [
-								"wallets"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get all wallets",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}/wallets",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"wallets"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get wallet by ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}/wallet/:id",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"wallet",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "1"
-								}
+								"wallet"
 							]
 						}
 					},
@@ -129,9 +180,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}/wallets?name=efectivo",
+							"raw": "{{URL}}/wallets?name=efectivo",
 							"host": [
-								"{{baseURL}}"
+								"{{URL}}"
 							],
 							"path": [
 								"wallets"
@@ -147,23 +198,64 @@
 					"response": []
 				},
 				{
-					"name": "Delete wallet by ID",
+					"name": "Get all wallets",
 					"request": {
-						"method": "DELETE",
+						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseURL}}/wallet/:id",
+							"raw": "{{URL}}/wallets",
 							"host": [
-								"{{baseURL}}"
+								"{{URL}}"
 							],
 							"path": [
-								"wallet",
+								"wallets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get wallet by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/wallets/:id",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"wallets",
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
-									"value": "8"
+									"value": "6"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete wallet by ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/wallets/:id",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"wallets",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "6"
 								}
 							]
 						}
@@ -177,7 +269,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"efectivo\",\n    \"balance\": 9876543.21,\n    \"created_at\": \"2022-06-09T09:04:09.494Z\"\n}",
+							"raw": "{\r\n    \"name\": \"Crédito3\",\r\n    \"balance\": 1234.56,\r\n    \"updated_at\": \"2021-12-31T23:59:59.999999Z\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -185,109 +277,18 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/wallet/:id",
+							"raw": "{{URL}}/wallets/:id",
 							"host": [
-								"{{baseURL}}"
+								"{{URL}}"
 							],
 							"path": [
-								"wallet",
+								"wallets",
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
-									"value": "7"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Transaction",
-			"item": [
-				{
-					"name": "Create transaction",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"description\": \"Remera\",\n    \"msg_id\": 1,\n    \"amount\": 1.5,\n    \"wallet_id\": 10,\n    \"category_id\": 9,\n    \"created_at\": \"2022-06-09T09:04:09.494Z\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseURL}}/transactions",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"transactions"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get all transactions",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}/transactions?category_id=9&wallet_id=10",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"transactions"
-							],
-							"query": [
-								{
-									"key": "category_id",
-									"value": "9"
-								},
-								{
-									"key": "wallet_id",
-									"value": "10"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update transaction by msg ID",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"description\": \"Remera actualizada\",\n    \"msg_id\": 1,\n    \"amount\": 1.5,\n    \"wallet_id\": 9,\n    \"created_at\": \"2022-06-09T09:04:09.494Z\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseURL}}/transaction/:msg_id",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"transaction",
-								":msg_id"
-							],
-							"variable": [
-								{
-									"key": "msg_id",
-									"value": "1"
+									"value": "5"
 								}
 							]
 						}
@@ -306,7 +307,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ropa\",\n    \"emoji\":\"👕\"\n}",
+							"raw": "{\r\n    \"name\": \"càátegôrIâ2\",\r\n    \"emoji\": \"☢\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -314,45 +315,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/categories",
+							"raw": "{{URL}}/category",
 							"host": [
-								"{{baseURL}}"
+								"{{URL}}"
 							],
 							"path": [
-								"categories"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update category by ID",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Comida\",\n    \"emoji\":\"🍽\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseURL}}/category/:id",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"category",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "8"
-								}
+								"category"
 							]
 						}
 					},
@@ -360,16 +328,98 @@
 				},
 				{
 					"name": "Get all categories",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Casa\",\r\n    \"emoji\": \"🏠\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseURL}}/categories",
+							"raw": "{{URL}}/categories",
 							"host": [
-								"{{baseURL}}"
+								"{{URL}}"
 							],
 							"path": [
 								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get category by name",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Casa\",\r\n    \"emoji\": \"🏠\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/categories?name=alguna cosa ranciaaa.",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"categories"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "alguna cosa ranciaaa."
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get category by emoji",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Casa\",\r\n    \"emoji\": \"🏠\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/categories?emoji=☢",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"categories"
+							],
+							"query": [
+								{
+									"key": "emoji",
+									"value": "☢"
+								}
 							]
 						}
 					},
@@ -380,65 +430,28 @@
 					"request": {
 						"method": "DELETE",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Casa\",\r\n    \"emoji\": \"🏠\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseURL}}/category/:id",
+							"raw": "{{URL}}/categories/:id",
 							"host": [
-								"{{baseURL}}"
+								"{{URL}}"
 							],
 							"path": [
-								"category",
+								"categories",
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
-									"value": "8"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get category by name",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}/categories?name=comida",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"categories"
-							],
-							"query": [
-								{
-									"key": "name",
-									"value": "comida"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get category by emoji",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseURL}}/categories?emoji=🍽",
-							"host": [
-								"{{baseURL}}"
-							],
-							"path": [
-								"categories"
-							],
-							"query": [
-								{
-									"key": "emoji",
-									"value": "🍽"
+									"value": "4"
 								}
 							]
 						}
@@ -453,9 +466,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseURL}}/token/:userID",
+					"raw": "{{URL}}/token/:userID",
 					"host": [
-						"{{baseURL}}"
+						"{{URL}}"
 					],
 					"path": [
 						"token",
@@ -464,25 +477,8 @@
 					"variable": [
 						{
 							"key": "userID",
-							"value": "1234"
+							"value": "709248859"
 						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Ping",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseURL}}/ping",
-					"host": [
-						"{{baseURL}}"
-					],
-					"path": [
-						"ping"
 					]
 				}
 			},
@@ -494,7 +490,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEyMzR9.-DHObxOD5BqY_HUGuTfhjiS649jLFeH-fLXJWXlx2YY",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjcwOTI0ODg1OX0.EkbGy9RJb_PgiwiZec7e6se8a7ZX93C-FA2eACtrff8",
 				"type": "string"
 			}
 		]
