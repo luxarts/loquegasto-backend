@@ -3,6 +3,9 @@ package defines
 const (
 	EndpointPing = "/ping"
 
+	// Authorize
+	EndpointAuthorize = "/auth/:" + ParamUserID
+
 	// Transactions
 	EndpointTransactionsCreate        = "/transactions"
 	EndpointTransactionsUpdateByMsgID = "/transaction/:" + ParamMsgID

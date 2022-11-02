@@ -48,12 +48,14 @@ func mapRoutes(r *gin.Engine) {
 	usersSrv := service.NewUsersService(usersRepo)
 	walletsSrv := service.NewWalletsService(walletsRepo)
 	catSrv := service.NewCategoriesService(catRepo)
+	oAuthSrv := service.NewOAuthService()
 
 	// Controllers init
 	txnCtrl := controller.NewTransactionsController(txnSrv)
 	usersCtrl := controller.NewUsersController(usersSrv)
 	walletsCtrl := controller.NewWalletsController(walletsSrv)
 	catCtrl := controller.NewCategoriesController(catSrv)
+	authCtrl := controller.NewAuthorizerController(oAuthSrv)
 
 	// Middleware
 	authMw := middleware.NewAuthMiddleware()
@@ -63,6 +65,9 @@ func mapRoutes(r *gin.Engine) {
 
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)
+
+	// Authorize
+	r.GET(defines.EndpointAuthorize, authCtrl.Login)
 
 	// Authorized endpoints
 	authorized := r.Group("/")
