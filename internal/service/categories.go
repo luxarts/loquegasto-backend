@@ -8,10 +8,10 @@ import (
 
 type CategoriesService interface {
 	Create(categoryDTO *domain.CategoryDTO) (*domain.CategoryDTO, error)
-	GetAll(userID int) (*[]domain.CategoryDTO, error)
-	GetByName(name string, userID int) (*domain.CategoryDTO, error)
-	GetByEmoji(emoji string, userID int) (*domain.CategoryDTO, error)
-	DeleteByID(id int, userID int) error
+	GetAll(userID int64) (*[]domain.CategoryDTO, error)
+	GetByName(name string, userID int64) (*domain.CategoryDTO, error)
+	GetByEmoji(emoji string, userID int64) (*domain.CategoryDTO, error)
+	DeleteByID(id int64, userID int64) error
 	UpdateByID(categoryDTO *domain.CategoryDTO) (*domain.CategoryDTO, error)
 }
 type categoriesService struct {
@@ -35,7 +35,7 @@ func (s *categoriesService) Create(categoryDTO *domain.CategoryDTO) (*domain.Cat
 
 	return category.ToDTO(), nil
 }
-func (s *categoriesService) GetAll(userID int) (*[]domain.CategoryDTO, error) {
+func (s *categoriesService) GetAll(userID int64) (*[]domain.CategoryDTO, error) {
 	categories, err := s.repo.GetAll(userID)
 	if err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func (s *categoriesService) GetAll(userID int) (*[]domain.CategoryDTO, error) {
 
 	return &categoryDTOs, nil
 }
-func (s *categoriesService) GetByName(name string, userID int) (*domain.CategoryDTO, error) {
+func (s *categoriesService) GetByName(name string, userID int64) (*domain.CategoryDTO, error) {
 	name = sanitizer.Sanitize(name)
 
 	category, err := s.repo.GetByName(name, userID)
@@ -58,7 +58,7 @@ func (s *categoriesService) GetByName(name string, userID int) (*domain.Category
 
 	return category.ToDTO(), nil
 }
-func (s *categoriesService) GetByEmoji(emoji string, userID int) (*domain.CategoryDTO, error) {
+func (s *categoriesService) GetByEmoji(emoji string, userID int64) (*domain.CategoryDTO, error) {
 	category, err := s.repo.GetByEmoji(emoji, userID)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (s *categoriesService) GetByEmoji(emoji string, userID int) (*domain.Catego
 
 	return category.ToDTO(), nil
 }
-func (s *categoriesService) DeleteByID(id int, userID int) error {
+func (s *categoriesService) DeleteByID(id int64, userID int64) error {
 	return s.repo.DeleteByID(id, userID)
 }
 func (s *categoriesService) UpdateByID(categoryDTO *domain.CategoryDTO) (*domain.CategoryDTO, error) {

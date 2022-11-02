@@ -5,16 +5,16 @@ import (
 )
 
 type Wallet struct {
-	ID            *int       `db:"id"`
-	UserID        int        `db:"user_id"`
+	ID            *int64     `db:"id"`
+	UserID        int64      `db:"user_id"`
 	Name          string     `db:"name"`
 	SanitizedName string     `db:"sanitized_name"`
 	Balance       int64      `db:"balance"`
 	CreatedAt     *time.Time `db:"created_at"`
 }
 type WalletDTO struct {
-	ID            int        `json:"id"`
-	UserID        int        `json:"user_id"`
+	ID            int64      `json:"id"`
+	UserID        int64      `json:"user_id"`
 	Name          string     `json:"name,omitempty"`
 	SanitizedName string     `json:"sanitized_name"`
 	Balance       float64    `json:"balance"`

@@ -40,7 +40,7 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 		return
 	}
 
-	body.UserID = ctx.GetInt(defines.ParamUserID)
+	body.UserID = ctx.GetInt64(defines.ParamUserID)
 
 	response, err := c.srv.Create(&body)
 
@@ -69,7 +69,7 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 		return
 	}
 
-	body.UserID = ctx.GetInt(defines.ParamUserID)
+	body.UserID = ctx.GetInt64(defines.ParamUserID)
 
 	response, err := c.srv.UpdateByMsgID(&body)
 
@@ -81,7 +81,7 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
 func (c *transactionsController) GetAll(ctx *gin.Context) {
-	userID := ctx.GetInt(defines.ParamUserID)
+	userID := ctx.GetInt64(defines.ParamUserID)
 
 	filters := make(domain.TransactionFilters)
 
