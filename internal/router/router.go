@@ -55,7 +55,7 @@ func mapRoutes(r *gin.Engine) {
 	usersCtrl := controller.NewUsersController(usersSrv)
 	walletsCtrl := controller.NewWalletsController(walletsSrv)
 	catCtrl := controller.NewCategoriesController(catSrv)
-	authCtrl := controller.NewAuthorizerController(oAuthSrv)
+	authCtrl := controller.NewAuthorizerController(oAuthSrv, usersSrv, walletsSrv)
 
 	// Middleware
 	authMw := middleware.NewAuthMiddleware()
@@ -67,7 +67,7 @@ func mapRoutes(r *gin.Engine) {
 	r.GET(defines.EndpointPing, healthCheck)
 
 	// Authorize
-	r.GET(defines.EndpointAuthorize, authCtrl.Login)
+	r.GET(defines.EndpointAuthorize, authCtrl.Register)
 
 	// Authorized endpoints
 	authorized := r.Group("/")

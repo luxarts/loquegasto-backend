@@ -18,7 +18,7 @@ const (
 
 type UsersRepository interface {
 	Create(user *domain.User) (*domain.User, error)
-	GetByID(id int) (*domain.User, error)
+	GetByID(id int64) (*domain.User, error)
 }
 type usersRepository struct {
 	db         *sqlx.DB
@@ -33,15 +33,18 @@ func NewUsersRepository(db *sqlx.DB) UsersRepository {
 }
 
 func (r *usersRepository) Create(user *domain.User) (*domain.User, error) {
-	query, args, err := r.sqlBuilder.CreateSQL(user.ID, user.ChatID, user.CreatedAt)
-	_, err = r.db.Exec(query, args...)
+	query, args, err := r.sqlBuilder.CreateSQL(user.ID, user.ChatID, user.CreatedAt, user.AccessToken, user.RefreshToken, user.Expiry)
 	if err != nil {
 		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
+	}
+	_, err = r.db.Exec(query, args...)
+	if err != nil {
+		return nil, jsend.NewError("failed usersRepository.Create", err, http.StatusInternalServerError)
 	}
 
 	return user, nil
 }
-func (r *usersRepository) GetByID(id int) (*domain.User, error) {
+func (r *usersRepository) GetByID(id int64) (*domain.User, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id)
 	if err != nil {
 		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
@@ -61,17 +64,17 @@ func (r *usersRepository) GetByID(id int) (*domain.User, error) {
 
 type usersSQL struct{}
 
-func (usql *usersSQL) GetByIDSQL(id int) (string, []interface{}, error) {
+func (usql *usersSQL) GetByIDSQL(id int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableUsers).
 		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (usql *usersSQL) CreateSQL(userID int, chatID int, createdAt time.Time) (string, []interface{}, error) {
+func (usql *usersSQL) CreateSQL(userID int64, chatID int, createdAt time.Time, accessToken string, refreshToken string, expiry time.Time) (string, []interface{}, error) {
 	return sq.Insert(tableUsers).
-		Columns("id", "chat_id", "created_at").
-		Values(userID, chatID, createdAt).
+		Columns("id", "chat_id", "created_at", "access_token", "refresh_token", "expiry").
+		Values(userID, chatID, createdAt, accessToken, refreshToken, expiry).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

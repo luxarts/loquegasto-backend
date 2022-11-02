@@ -1,42 +1,72 @@
 package controller
 
 import (
-	"fmt"
 	"loquegasto-backend/internal/defines"
+	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/service"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
+
+	"github.com/luxarts/jsend-go"
 
 	"github.com/gin-gonic/gin"
 )
 
 type AuthorizerController interface {
-	Login(ctx *gin.Context)
+	Register(ctx *gin.Context)
 }
 
 type authorizerController struct {
-	oAuthSrv service.OAuthService
+	oAuthSrv   service.OAuthService
+	usersSrv   service.UsersService
+	walletsSrv service.WalletsService
 }
 
-func NewAuthorizerController(oAuthSrv service.OAuthService) AuthorizerController {
-	return &authorizerController{oAuthSrv: oAuthSrv}
+func NewAuthorizerController(oAuthSrv service.OAuthService, usersSrv service.UsersService, walletsSrv service.WalletsService) AuthorizerController {
+	return &authorizerController{
+		oAuthSrv:   oAuthSrv,
+		usersSrv:   usersSrv,
+		walletsSrv: walletsSrv,
+	}
 }
-func (ctrl *authorizerController) Login(ctx *gin.Context) {
-	userID := ctx.Param(defines.ParamUserID)
+func (ctrl *authorizerController) Register(ctx *gin.Context) {
+	userIDstr := ctx.Param(defines.ParamUserID)
 	code := ctx.Query(defines.QueryCode)
 
-	// Exchange code for token
-	token, err := ctrl.oAuthSrv.GetToken(userID, code)
+	userID, err := strconv.ParseInt(userIDstr, 10, 64)
 	if err != nil {
 		return
 	}
 
+	// Exchange code for token
+	token, err := ctrl.oAuthSrv.GetToken(userIDstr, code)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, jsend.NewError("failed to GetToken", err))
+		return
+	}
+
+	now := time.Now()
+
+	userDTO := &domain.UserDTO{
+		ID:           userID,
+		CreatedAt:    &now,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		Expiry:       &token.Expiry,
+	}
+
 	// Create user with token and create the default wallet
+	userDTO, err = ctrl.usersSrv.Create(userDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, jsend.NewError("failed to create user", err))
+		return
+	}
+
 	// Create default wallet
 	// Create spreadsheet
 	// Store spreadsheetID in DB
-
-	fmt.Printf("UserID: %s Token: %+v\n", userID, token)
 
 	// Redirect to Telegram
 	location := url.URL{

@@ -4,7 +4,10 @@ create table core.users
         constraint users_pk
             primary key,
     chat_id    integer   not null,
-    created_at timestamp not null
+    created_at timestamp not null,
+    access_token  varchar(255),
+    refresh_token varchar(255),
+    expiry        timestamp
 );
 
 alter table core.users

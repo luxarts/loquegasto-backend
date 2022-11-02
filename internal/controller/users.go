@@ -31,7 +31,7 @@ func (c *userController) Create(ctx *gin.Context) {
 		return
 	}
 
-	body.ID = ctx.GetInt(defines.ParamUserID)
+	body.ID = ctx.GetInt64(defines.ParamUserID)
 
 	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
@@ -60,7 +60,7 @@ func (c *userController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
 }
 func (c *userController) Get(ctx *gin.Context) {
-	userID := ctx.GetInt(defines.ParamUserID)
+	userID := ctx.GetInt64(defines.ParamUserID)
 
 	response, err := c.srv.GetByID(userID)
 

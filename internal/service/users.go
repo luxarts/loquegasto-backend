@@ -7,7 +7,7 @@ import (
 
 type UsersService interface {
 	Create(userDTO *domain.UserDTO) (*domain.UserDTO, error)
-	GetByID(id int) (*domain.UserDTO, error)
+	GetByID(id int64) (*domain.UserDTO, error)
 }
 type usersService struct {
 	repo repository.UsersRepository
@@ -28,7 +28,7 @@ func (s *usersService) Create(userDTO *domain.UserDTO) (*domain.UserDTO, error) 
 
 	return user.ToDTO(), nil
 }
-func (s *usersService) GetByID(id int) (*domain.UserDTO, error) {
+func (s *usersService) GetByID(id int64) (*domain.UserDTO, error) {
 	user, err := s.repo.GetByID(id)
 	if err != nil {
 		return nil, err
