@@ -58,13 +58,25 @@ func (ctrl *authorizerController) Register(ctx *gin.Context) {
 	}
 
 	// Create user with token and create the default wallet
-	userDTO, err = ctrl.usersSrv.Create(userDTO)
+	_, err = ctrl.usersSrv.Create(userDTO)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, jsend.NewError("failed to create user", err))
 		return
 	}
 
 	// Create default wallet
+	walletDTO := &domain.WalletDTO{
+		UserID:    userID,
+		Name:      "Efectivo",
+		Balance:   0,
+		CreatedAt: &now,
+	}
+	_, err = ctrl.walletsSrv.Create(walletDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, jsend.NewError("failed to create wallet", err))
+		return
+	}
+
 	// Create spreadsheet
 	// Store spreadsheetID in DB
 
