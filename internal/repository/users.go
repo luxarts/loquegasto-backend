@@ -1,11 +1,11 @@
 package repository
 
 import (
+	"database/sql"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/utils/dbstruct"
 	"net/http"
-	"strings"
 
 	"github.com/lib/pq"
 
@@ -58,7 +58,7 @@ func (r *usersRepository) GetByID(id int) (*domain.User, error) {
 	var user domain.User
 	err = r.db.QueryRowx(query, args...).StructScan(&user)
 	if err != nil {
-		if strings.Contains(err.Error(), "no rows in result set") {
+		if err == sql.ErrNoRows {
 			return nil, jsend.NewError("user not found", nil, http.StatusNotFound)
 		}
 		return nil, jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
