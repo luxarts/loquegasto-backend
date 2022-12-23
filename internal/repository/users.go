@@ -1,10 +1,13 @@
 package repository
 
 import (
+	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
+	"loquegasto-backend/internal/utils/dbstruct"
 	"net/http"
 	"strings"
-	"time"
+
+	"github.com/lib/pq"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/luxarts/jsend-go"
@@ -32,14 +35,19 @@ func NewUsersRepository(db *sqlx.DB) UsersRepository {
 	}
 }
 
-func (r *usersRepository) Create(user *domain.User) (*domain.User, error) {
-	query, args, err := r.sqlBuilder.CreateSQL(user.ID, user.ChatID, user.CreatedAt)
+func (r *usersRepository) Create(u *domain.User) (*domain.User, error) {
+	query, args, err := r.sqlBuilder.CreateSQL(u)
 	_, err = r.db.Exec(query, args...)
 	if err != nil {
+		if pgerr, ok := err.(*pq.Error); ok {
+			if pgerr.Code == defines.PGCodeDuplicateKey {
+				return nil, jsend.NewError("user ID already exists", nil, http.StatusConflict)
+			}
+		}
 		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
 	}
 
-	return user, nil
+	return u, nil
 }
 func (r *usersRepository) GetByID(id int) (*domain.User, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id)
@@ -59,19 +67,20 @@ func (r *usersRepository) GetByID(id int) (*domain.User, error) {
 	return &user, nil
 }
 
+// SQL builders
 type usersSQL struct{}
 
+func (usql *usersSQL) CreateSQL(u *domain.User) (string, []interface{}, error) {
+	return sq.Insert(tableUsers).
+		Columns(dbstruct.GetColumns(u)...).
+		Values(dbstruct.GetValues(u)...).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+}
 func (usql *usersSQL) GetByIDSQL(id int) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableUsers).
 		Where(sq.Eq{"id": id}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-}
-func (usql *usersSQL) CreateSQL(userID int, chatID int, createdAt time.Time) (string, []interface{}, error) {
-	return sq.Insert(tableUsers).
-		Columns("id", "chat_id", "created_at").
-		Values(userID, chatID, createdAt).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

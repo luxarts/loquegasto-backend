@@ -1,17 +1,21 @@
-create table core.users
+CREATE TYPE states AS ENUM ('wallet_selection');
+
+CREATE TABLE core.users
 (
-    id         integer   not null
-        constraint users_pk
-            primary key,
-    chat_id    integer   not null,
-    created_at timestamp not null
+    id         INTEGER NOT NULL
+        CONSTRAINT users_pk
+            PRIMARY KEY,
+    chat_id    INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    state states
 );
 
-alter table core.users
-    owner to pgroot;
+ALTER TABLE core.users
+    owner TO postgres;
 
-create unique index users_chat_id_uindex
-    on core.users (chat_id);
+CREATE UNIQUE INDEX users_chat_id_uindex
+    ON core.users (chat_id);
 
-create unique index users_id_uindex
-    on core.users (id);
+CREATE UNIQUE INDEX users_id_uindex
+    ON core.users (id);
