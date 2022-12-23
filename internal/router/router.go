@@ -76,6 +76,7 @@ func mapRoutes(r *gin.Engine) {
 	// Users
 	authorized.POST(defines.EndpointUsersCreate, usersCtrl.Create)
 	authorized.GET(defines.EndpointUsersGet, usersCtrl.Get)
+	authorized.PUT(defines.EndpointUsersUpdate, usersCtrl.Update)
 
 	// Wallets
 	authorized.POST(defines.EndpointWalletsCreate, walletsCtrl.Create)

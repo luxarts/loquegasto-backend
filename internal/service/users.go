@@ -8,6 +8,7 @@ import (
 type UsersService interface {
 	Create(userDTO *domain.UserDTO) (*domain.UserDTO, error)
 	GetByID(id int) (*domain.UserDTO, error)
+	Update(userDTO *domain.UserDTO) (*domain.UserDTO, error)
 }
 type usersService struct {
 	repo repository.UsersRepository
@@ -33,5 +34,15 @@ func (s *usersService) GetByID(id int) (*domain.UserDTO, error) {
 	if err != nil {
 		return nil, err
 	}
+	return user.ToDTO(), nil
+}
+func (s *usersService) Update(userDTO *domain.UserDTO) (*domain.UserDTO, error) {
+	user := userDTO.ToUser()
+
+	user, err := s.repo.Update(user)
+	if err != nil {
+		return nil, err
+	}
+
 	return user.ToDTO(), nil
 }

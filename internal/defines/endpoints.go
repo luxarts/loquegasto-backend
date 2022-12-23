@@ -11,6 +11,7 @@ const (
 	// Users
 	EndpointUsersCreate = "/users"
 	EndpointUsersGet    = "/user"
+	EndpointUsersUpdate = "/user"
 
 	// Wallets
 	EndpointWalletsCreate     = "/wallets"
