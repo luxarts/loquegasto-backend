@@ -9,6 +9,7 @@ type UsersService interface {
 	Create(userDTO *domain.UserDTO) (*domain.UserDTO, error)
 	GetByID(id int) (*domain.UserDTO, error)
 	Update(userDTO *domain.UserDTO) (*domain.UserDTO, error)
+	Delete(id int) error
 }
 type usersService struct {
 	repo repository.UsersRepository
@@ -45,4 +46,7 @@ func (s *usersService) Update(userDTO *domain.UserDTO) (*domain.UserDTO, error) 
 	}
 
 	return user.ToDTO(), nil
+}
+func (s *usersService) Delete(id int) error {
+	return s.repo.Delete(id)
 }

@@ -23,6 +23,7 @@ type UsersRepository interface {
 	Create(user *domain.User) (*domain.User, error)
 	GetByID(id int) (*domain.User, error)
 	Update(user *domain.User) (*domain.User, error)
+	Delete(id int) error
 }
 type usersRepository struct {
 	db         *sqlx.DB
@@ -85,6 +86,19 @@ func (r *usersRepository) Update(u *domain.User) (*domain.User, error) {
 
 	return u, nil
 }
+func (r *usersRepository) Delete(id int) error {
+	query, args, err := r.sqlBuilder.DeleteByIDSQL(id)
+	if err != nil {
+		return jsend.NewError("failed DeleteByIDSQL", err, http.StatusInternalServerError)
+	}
+
+	_, err = r.db.Exec(query, args...)
+	if err != nil {
+		return jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
+	}
+
+	return nil
+}
 
 // SQL builders
 type usersSQL struct{}
@@ -110,6 +124,12 @@ func (usql *usersSQL) UpdateSQL(u *domain.User) (string, []interface{}, error) {
 
 	return builder.
 		Where(sq.Eq{"id": u.ID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+}
+func (usql *usersSQL) DeleteByIDSQL(id int) (string, []interface{}, error) {
+	return sq.Delete(tableUsers).
+		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

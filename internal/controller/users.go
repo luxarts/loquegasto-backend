@@ -14,6 +14,7 @@ type UsersController interface {
 	Create(ctx *gin.Context)
 	Get(ctx *gin.Context)
 	Update(ctx *gin.Context)
+	Delete(ctx *gin.Context)
 }
 type userController struct {
 	srv service.UsersService
@@ -83,4 +84,16 @@ func (c *userController) Update(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
+}
+func (c *userController) Delete(ctx *gin.Context) {
+	userID := ctx.GetInt(defines.ParamUserID)
+
+	err := c.srv.Delete(userID)
+
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, jsend.NewSuccess(nil))
 }
