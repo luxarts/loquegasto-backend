@@ -22,6 +22,8 @@ const (
 type UsersRepository interface {
 	Create(user *domain.User) (*domain.User, error)
 	GetByID(id int) (*domain.User, error)
+	Update(user *domain.User) (*domain.User, error)
+	Delete(id int) error
 }
 type usersRepository struct {
 	db         *sqlx.DB
@@ -66,6 +68,37 @@ func (r *usersRepository) GetByID(id int) (*domain.User, error) {
 
 	return &user, nil
 }
+func (r *usersRepository) Update(u *domain.User) (*domain.User, error) {
+	query, args, err := r.sqlBuilder.UpdateSQL(u)
+	result, err := r.db.Exec(query, args...)
+
+	if err != nil {
+		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
+	}
+	if affected == 0 {
+		return nil, jsend.NewError("user not found", nil, http.StatusNotFound)
+	}
+
+	return u, nil
+}
+func (r *usersRepository) Delete(id int) error {
+	query, args, err := r.sqlBuilder.DeleteByIDSQL(id)
+	if err != nil {
+		return jsend.NewError("failed DeleteByIDSQL", err, http.StatusInternalServerError)
+	}
+
+	_, err = r.db.Exec(query, args...)
+	if err != nil {
+		return jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
+	}
+
+	return nil
+}
 
 // SQL builders
 type usersSQL struct{}
@@ -80,6 +113,22 @@ func (usql *usersSQL) CreateSQL(u *domain.User) (string, []interface{}, error) {
 func (usql *usersSQL) GetByIDSQL(id int) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableUsers).
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+}
+func (usql *usersSQL) UpdateSQL(u *domain.User) (string, []interface{}, error) {
+	builder := sq.Update(tableUsers)
+
+	builder = dbstruct.SetValues(builder, u)
+
+	return builder.
+		Where(sq.Eq{"id": u.ID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+}
+func (usql *usersSQL) DeleteByIDSQL(id int) (string, []interface{}, error) {
+	return sq.Delete(tableUsers).
 		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

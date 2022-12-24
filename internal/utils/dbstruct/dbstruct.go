@@ -1,6 +1,10 @@
 package dbstruct
 
-import "reflect"
+import (
+	"reflect"
+
+	sq "github.com/Masterminds/squirrel"
+)
 
 func GetColumns(structure interface{}) []string {
 	var columns []string
@@ -21,4 +25,14 @@ func GetValues(structure interface{}) []interface{} {
 	}
 
 	return values
+}
+func SetValues(builder sq.UpdateBuilder, structure interface{}) sq.UpdateBuilder {
+	columns := GetColumns(structure)
+	values := GetValues(structure)
+
+	for i := range columns {
+		builder = builder.Set(columns[i], values[i])
+	}
+
+	return builder
 }
