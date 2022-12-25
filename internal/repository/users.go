@@ -70,15 +70,19 @@ func (r *usersRepository) GetByID(id int) (*domain.User, error) {
 }
 func (r *usersRepository) Update(u *domain.User) (*domain.User, error) {
 	query, args, err := r.sqlBuilder.UpdateSQL(u)
+	if err != nil {
+		return nil, jsend.NewError("failed UpdateSQL", err, http.StatusInternalServerError)
+	}
+
 	result, err := r.db.Exec(query, args...)
 
 	if err != nil {
-		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed Exec", err, http.StatusInternalServerError)
 	}
 
 	affected, err := result.RowsAffected()
 	if err != nil {
-		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed RowsAffected", err, http.StatusInternalServerError)
 	}
 	if affected == 0 {
 		return nil, jsend.NewError("user not found", nil, http.StatusNotFound)
