@@ -1,26 +1,24 @@
-create table wallets
+CREATE TABLE core.wallets
 (
-    id             serial
-        constraint wallets_pk
-            primary key,
-    user_id        integer     not null
-        constraint wallets_users_id_fk
-            references core.users,
-    name           varchar(64) not null,
-    sanitized_name varchar(64) not null,
-    balance        integer     not null,
-    created_at     timestamp   not null
+    id             SERIAL
+        CONSTRAINT wallets_pk
+            PRIMARY KEY,
+    user_id        INTEGER     NOT NULL,
+    name           VARCHAR(64) NOT NULL,
+    sanitized_name VARCHAR(64) NOT NULL,
+    balance        INTEGER     NOT NULL,
+    created_at     TIMESTAMP   NOT NULL
 );
 
-alter table wallets
-    owner to pgroot;
+ALTER TABLE core.wallets
+    OWNER TO postgres;
 
-create unique index wallets_id_uindex
-    on wallets (id);
+CREATE UNIQUE INDEX wallets_id_uindex
+    ON core.wallets (id);
 
-create index wallets_sanitized_name_index
-    on wallets (sanitized_name);
+CREATE  INDEX wallets_sanitized_name_index
+    ON core.wallets (sanitized_name);
 
-create index wallets_user_id_index
-    on wallets (user_id);
+CREATE INDEX wallets_user_id_index
+    ON core.wallets (user_id);
 

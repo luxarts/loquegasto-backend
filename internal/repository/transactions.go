@@ -37,10 +37,10 @@ func NewTransactionsRepository(db *sqlx.DB) TransactionsRepository {
 		sqlBuilder: &transactionsSQL{},
 	}
 }
-func (r *transactionsRepository) Create(transaction *domain.Transaction) (*domain.Transaction, error) {
-	transaction.ID = uuid.NewString()
+func (r *transactionsRepository) Create(t *domain.Transaction) (*domain.Transaction, error) {
+	t.ID = uuid.NewString()
 
-	query, args, err := r.sqlBuilder.CreateSQL(transaction)
+	query, args, err := r.sqlBuilder.CreateSQL(t)
 	if err != nil {
 		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
 	}
@@ -50,18 +50,28 @@ func (r *transactionsRepository) Create(transaction *domain.Transaction) (*domai
 		return nil, jsend.NewError("failed Exec", err, http.StatusInternalServerError)
 	}
 
-	return transaction, nil
+	return t, nil
 }
-func (r *transactionsRepository) UpdateByMsgID(transaction *domain.Transaction) (*domain.Transaction, error) {
-	query, args, err := r.sqlBuilder.UpdateByMsgIDSQL(transaction)
+func (r *transactionsRepository) UpdateByMsgID(t *domain.Transaction) (*domain.Transaction, error) {
+	query, args, err := r.sqlBuilder.UpdateByMsgIDSQL(t)
 	if err != nil {
 		return nil, jsend.NewError("failed UpdateByMsgIDSQL", err, http.StatusInternalServerError)
 	}
-	_, err = r.db.Exec(query, args...)
+
+	result, err := r.db.Exec(query, args...)
 	if err != nil {
 		return nil, jsend.NewError("failed Exec", err, http.StatusInternalServerError)
 	}
-	return transaction, nil
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return nil, jsend.NewError("failed RowsAffected", err, http.StatusInternalServerError)
+	}
+	if affected == 0 {
+		return nil, jsend.NewError("transaction not found", nil, http.StatusNotFound)
+	}
+
+	return t, nil
 }
 func (r *transactionsRepository) GetAll(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error) {
 	query, args, err := r.sqlBuilder.GetAllSQL(userID, filters)
@@ -105,22 +115,22 @@ func (r *transactionsRepository) GetByMsgID(msgID int, userID int) (*domain.Tran
 // SQL builders
 type transactionsSQL struct{}
 
-func (tsql *transactionsSQL) CreateSQL(transaction *domain.Transaction) (string, []interface{}, error) {
+func (tsql *transactionsSQL) CreateSQL(t *domain.Transaction) (string, []interface{}, error) {
 	return sq.Insert(tableTransactions).
-		Columns(dbstruct.GetColumns(transaction)...).
-		Values(dbstruct.GetValues(transaction)...).
+		Columns(dbstruct.GetColumns(t)...).
+		Values(dbstruct.GetValues(t)...).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (tsql *transactionsSQL) UpdateByMsgIDSQL(transaction *domain.Transaction) (string, []interface{}, error) {
-	return sq.Update(tableTransactions).
-		Set("amount", transaction.Amount).
-		Set("description", transaction.Description).
-		Set("wallet_id", transaction.WalletID).
-		Set("category_id", transaction.CategoryID).
+func (tsql *transactionsSQL) UpdateByMsgIDSQL(t *domain.Transaction) (string, []interface{}, error) {
+	builder := sq.Update(tableTransactions)
+
+	builder = dbstruct.SetValues(builder, t)
+
+	return builder.
 		Where(sq.And{
-			sq.Eq{"msg_id": transaction.MsgID},
-			sq.Eq{"user_id": transaction.UserID},
+			sq.Eq{"msg_id": t.MsgID},
+			sq.Eq{"user_id": t.UserID},
 		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

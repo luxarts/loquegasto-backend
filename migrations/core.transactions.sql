@@ -1,35 +1,28 @@
-create table transactions
+CREATE TABLE core.transactions
 (
-    uuid        varchar(64) not null
-        constraint transactions_pk
-            primary key,
-    user_id     integer     not null
-        constraint transactions_users_id_fk
-            references core.users,
-    msg_id      integer     not null,
-    amount      integer     not null,
-    description varchar(64) not null,
-    wallet_id   integer     not null
-        constraint transactions_wallets_id_fk
-            references core.wallets,
-    created_at  timestamp   not null,
-    category_id integer
-        constraint transactions_categories_id_fk
-            references core.categories
+    uuid        VARCHAR(64) NOT NULL
+        CONSTRAINT transactions_pk
+            PRIMARY KEY,
+    user_id     INTEGER     NOT NULL,
+    msg_id      INTEGER     NOT NULL,
+    amount      INTEGER     NOT NULL,
+    description VARCHAR(64) NOT NULL,
+    wallet_id   INTEGER     NOT NULL,
+    created_at  TIMESTAMP   NOT NULL,
+    category_id INTEGER
 );
 
-alter table transactions
-    owner to pgroot;
+ALTER TABLE core.transactions
+    OWNER TO postgres;
 
-create index transactions_category_id_index
-    on transactions (category_id);
+CREATE INDEX transactions_category_id_index
+    ON core.transactions (category_id);
 
-create unique index transactions_uuid_uindex
-    on transactions (uuid);
+CREATE UNIQUE INDEX transactions_uuid_uindex
+    ON core.transactions (uuid);
 
-create index transactions_wallet_id_index
-    on transactions (wallet_id);
+CREATE INDEX transactions_wallet_id_index
+    ON core.transactions (wallet_id);
 
-create unique index transactions_msg_id_uindex
-    on transactions (msg_id);
-
+CREATE UNIQUE INDEX transactions_msg_id_uindex
+    ON core.transactions (msg_id);

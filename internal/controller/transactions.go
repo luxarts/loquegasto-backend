@@ -64,12 +64,13 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
-	if !body.IsValidForUpdate() || body.MsgID != msgID {
+	if !body.IsValidForUpdate() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
 	body.UserID = ctx.GetInt(defines.ParamUserID)
+	body.MsgID = msgID
 
 	response, err := c.srv.UpdateByMsgID(&body)
 
