@@ -1,10 +1,13 @@
 package repository
 
 import (
+	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/utils/dbstruct"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/luxarts/jsend-go"
 
@@ -142,6 +145,19 @@ func (tsql *transactionsSQL) GetAllSQL(userID int, filters *domain.TransactionFi
 	if len(*filters) > 0 {
 		and := sq.And{sq.Eq{"user_id": userID}}
 		for k, v := range *filters {
+			if k == defines.QueryFrom || k == defines.QueryTo {
+				tsInt, err := strconv.ParseInt(v, 10, 64)
+				if err == nil {
+					ts := time.Unix(tsInt, 0).Format(time.RFC3339)
+					if k == defines.QueryFrom {
+						and = append(and, sq.GtOrEq{"created_at": ts})
+					} else {
+						and = append(and, sq.LtOrEq{"created_at": ts})
+					}
+				}
+				continue
+			}
+
 			and = append(and, sq.Eq{k: v})
 		}
 		q = q.Where(and)

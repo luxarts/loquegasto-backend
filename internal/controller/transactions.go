@@ -94,6 +94,14 @@ func (c *transactionsController) GetAll(ctx *gin.Context) {
 	if categoryID != "" {
 		filters[defines.QueryCategoryID] = categoryID
 	}
+	from, _ := ctx.GetQuery(defines.QueryFrom)
+	if from != "" {
+		filters[defines.QueryFrom] = from
+	}
+	to, _ := ctx.GetQuery(defines.QueryTo)
+	if to != "" {
+		filters[defines.QueryTo] = to
+	}
 
 	response, err := c.srv.GetAll(userID, &filters)
 
