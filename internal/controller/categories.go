@@ -16,6 +16,7 @@ type CategoriesController interface {
 	GetAll(ctx *gin.Context)
 	DeleteByID(ctx *gin.Context)
 	UpdateByID(ctx *gin.Context)
+	GetByID(ctx *gin.Context)
 }
 type categoriesController struct {
 	srv service.CategoriesService
@@ -154,6 +155,24 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 	}
 
 	response, err := c.srv.UpdateByID(&body)
+
+	if err, isError := err.(*jsend.Body); isError && err != nil {
+		ctx.JSON(*err.Code, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
+}
+func (c *categoriesController) GetByID(ctx *gin.Context) {
+	idStr := ctx.Param(defines.ParamID)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
+		return
+	}
+	userID := ctx.GetInt(defines.ParamUserID)
+
+	response, err := c.srv.GetByID(id, userID)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)

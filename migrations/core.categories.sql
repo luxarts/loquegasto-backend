@@ -1,24 +1,22 @@
-create table categories
+CREATE TABLE core.categories
 (
-    id             serial
-        constraint categories_pk
-            primary key,
-    user_id        integer     not null
-        constraint categories_users_id_fk
-            references core.users,
-    name           varchar(64) not null,
-    sanitized_name varchar(64) not null,
-    emoji          varchar(8)
+    id             SERIAL
+        CONSTRAINT categories_pk
+            PRIMARY KEY,
+    user_id        INTEGER     NOT NULL,
+    name           VARCHAR(64) NOT NULL,
+    sanitized_name VARCHAR(64) NOT NULL,
+    emoji          VARCHAR(8)
 );
 
-alter table categories
-    owner to pgroot;
+ALTER TABLE core.categories
+    OWNER TO postgres;
 
-create index categories_emoji_index
-    on categories (emoji);
+CREATE INDEX categories_emoji_index
+    ON core.categories (emoji);
 
-create unique index categories_id_uindex
-    on categories (id);
+CREATE UNIQUE INDEX categories_id_uindex
+    ON core.categories (id);
 
-create index categories_sanitized_name_index
-    on categories (sanitized_name);
+CREATE INDEX categories_sanitized_name_index
+    ON core.categories (sanitized_name);

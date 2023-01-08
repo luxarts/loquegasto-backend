@@ -91,6 +91,7 @@ func mapRoutes(r *gin.Engine) {
 	authorized.GET(defines.EndpointCategoriesGetAll, catCtrl.GetAll)
 	authorized.DELETE(defines.EndpointCategoriesDeleteByID, catCtrl.DeleteByID)
 	authorized.PUT(defines.EndpointCategoriesUpdateByID, catCtrl.UpdateByID)
+	authorized.GET(defines.EndpointCategoriesGetByID, catCtrl.GetByID)
 }
 
 func healthCheck(ctx *gin.Context) {
