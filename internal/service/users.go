@@ -7,9 +7,9 @@ import (
 
 type UsersService interface {
 	Create(userDTO *domain.UserDTO) (*domain.UserDTO, error)
-	GetByID(id int) (*domain.UserDTO, error)
+	GetByID(id int64) (*domain.UserDTO, error)
 	Update(userDTO *domain.UserDTO) (*domain.UserDTO, error)
-	Delete(id int) error
+	Delete(id int64) error
 }
 type usersService struct {
 	repo repository.UsersRepository
@@ -30,7 +30,7 @@ func (s *usersService) Create(userDTO *domain.UserDTO) (*domain.UserDTO, error) 
 
 	return user.ToDTO(), nil
 }
-func (s *usersService) GetByID(id int) (*domain.UserDTO, error) {
+func (s *usersService) GetByID(id int64) (*domain.UserDTO, error) {
 	user, err := s.repo.GetByID(id)
 	if err != nil {
 		return nil, err
@@ -47,6 +47,6 @@ func (s *usersService) Update(userDTO *domain.UserDTO) (*domain.UserDTO, error) 
 
 	return user.ToDTO(), nil
 }
-func (s *usersService) Delete(id int) error {
+func (s *usersService) Delete(id int64) error {
 	return s.repo.Delete(id)
 }

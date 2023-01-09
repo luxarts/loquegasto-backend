@@ -25,8 +25,8 @@ const (
 type TransactionsRepository interface {
 	Create(transaction *domain.Transaction) (*domain.Transaction, error)
 	UpdateByMsgID(transaction *domain.Transaction) (*domain.Transaction, error)
-	GetAll(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error)
-	GetByMsgID(msgID int, userID int) (*domain.Transaction, error)
+	GetAll(userID int64, filters *domain.TransactionFilters) (*[]domain.Transaction, error)
+	GetByMsgID(msgID int64, userID int64) (*domain.Transaction, error)
 }
 
 type transactionsRepository struct {
@@ -76,7 +76,7 @@ func (r *transactionsRepository) UpdateByMsgID(t *domain.Transaction) (*domain.T
 
 	return t, nil
 }
-func (r *transactionsRepository) GetAll(userID int, filters *domain.TransactionFilters) (*[]domain.Transaction, error) {
+func (r *transactionsRepository) GetAll(userID int64, filters *domain.TransactionFilters) (*[]domain.Transaction, error) {
 	query, args, err := r.sqlBuilder.GetAllSQL(userID, filters)
 
 	rows, err := r.db.Queryx(query, args...)
@@ -98,7 +98,7 @@ func (r *transactionsRepository) GetAll(userID int, filters *domain.TransactionF
 
 	return &results, nil
 }
-func (r *transactionsRepository) GetByMsgID(msgID int, userID int) (*domain.Transaction, error) {
+func (r *transactionsRepository) GetByMsgID(msgID int64, userID int64) (*domain.Transaction, error) {
 	query, args, err := r.sqlBuilder.GetByMsgIDSQL(msgID, userID)
 	if err != nil {
 		return nil, jsend.NewError("failed GetByMsgIDSQL", err, http.StatusInternalServerError)
@@ -138,7 +138,7 @@ func (tsql *transactionsSQL) UpdateByMsgIDSQL(t *domain.Transaction) (string, []
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (tsql *transactionsSQL) GetAllSQL(userID int, filters *domain.TransactionFilters) (string, []interface{}, error) {
+func (tsql *transactionsSQL) GetAllSQL(userID int64, filters *domain.TransactionFilters) (string, []interface{}, error) {
 	q := sq.Select("*").
 		From(tableTransactions)
 
@@ -168,7 +168,7 @@ func (tsql *transactionsSQL) GetAllSQL(userID int, filters *domain.TransactionFi
 	return q.PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (tsql *transactionsSQL) GetByMsgIDSQL(msgID int, userID int) (string, []interface{}, error) {
+func (tsql *transactionsSQL) GetByMsgIDSQL(msgID int64, userID int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableTransactions).
 		Where(sq.And{

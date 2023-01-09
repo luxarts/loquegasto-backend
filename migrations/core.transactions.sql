@@ -3,13 +3,13 @@ CREATE TABLE core.transactions
     uuid        VARCHAR(64) NOT NULL
         CONSTRAINT transactions_pk
             PRIMARY KEY,
-    user_id     INTEGER     NOT NULL,
-    msg_id      INTEGER     NOT NULL,
-    amount      INTEGER     NOT NULL,
+    user_id     BIGINT     NOT NULL,
+    msg_id      BIGINT     NOT NULL,
+    amount      BIGINT     NOT NULL,
     description VARCHAR(64) NOT NULL,
-    wallet_id   INTEGER     NOT NULL,
+    wallet_id   BIGINT     NOT NULL,
     created_at  TIMESTAMP   NOT NULL,
-    category_id INTEGER
+    category_id BIGINT
 );
 
 ALTER TABLE core.transactions

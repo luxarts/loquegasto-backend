@@ -99,7 +99,7 @@ func healthCheck(ctx *gin.Context) {
 }
 func generateToken(ctx *gin.Context) {
 	userID := ctx.Param("userID")
-	userIDInt, err := strconv.Atoi(userID)
+	userIDInt, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return

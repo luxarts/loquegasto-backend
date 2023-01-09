@@ -36,7 +36,7 @@ func (c *categoriesController) Create(ctx *gin.Context) {
 		return
 	}
 
-	body.UserID = ctx.GetInt(defines.ParamUserID)
+	body.UserID = ctx.GetInt64(defines.ParamUserID)
 
 	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
@@ -73,7 +73,7 @@ func (c *categoriesController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
 }
 func (c *categoriesController) GetAll(ctx *gin.Context) {
-	userID := ctx.GetInt(defines.ParamUserID)
+	userID := ctx.GetInt64(defines.ParamUserID)
 
 	var response interface{}
 	var err error
@@ -95,12 +95,12 @@ func (c *categoriesController) GetAll(ctx *gin.Context) {
 }
 func (c *categoriesController) DeleteByID(ctx *gin.Context) {
 	idStr := ctx.Param(defines.ParamID)
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
-	userID := ctx.GetInt(defines.ParamUserID)
+	userID := ctx.GetInt64(defines.ParamUserID)
 
 	err = c.srv.DeleteByID(id, userID)
 
@@ -119,13 +119,13 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 		return
 	}
 	idStr := ctx.Param(defines.ParamID)
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
 	body.ID = id
-	body.UserID = ctx.GetInt(defines.ParamUserID)
+	body.UserID = ctx.GetInt64(defines.ParamUserID)
 
 	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
@@ -165,12 +165,12 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 }
 func (c *categoriesController) GetByID(ctx *gin.Context) {
 	idStr := ctx.Param(defines.ParamID)
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
-	userID := ctx.GetInt(defines.ParamUserID)
+	userID := ctx.GetInt64(defines.ParamUserID)
 
 	response, err := c.srv.GetByID(id, userID)
 

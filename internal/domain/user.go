@@ -3,18 +3,16 @@ package domain
 import "time"
 
 type User struct {
-	ID        int       `db:"id"`
+	ID        int64     `db:"id"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 	ChatID    int       `db:"chat_id"`
-	State     *string   `db:"state"`
 }
 type UserDTO struct {
-	ID        int        `json:"id"`
+	ID        int64      `json:"id"`
 	CreatedAt *time.Time `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
 	ChatID    int        `json:"chat_id"`
-	State     *string    `json:"state"`
 }
 
 func (u *User) ToDTO() *UserDTO {
@@ -23,7 +21,6 @@ func (u *User) ToDTO() *UserDTO {
 		CreatedAt: &u.CreatedAt,
 		UpdatedAt: &u.UpdatedAt,
 		ChatID:    u.ChatID,
-		State:     u.State,
 	}
 }
 func (dto *UserDTO) ToUser() *User {
@@ -32,7 +29,6 @@ func (dto *UserDTO) ToUser() *User {
 		CreatedAt: *dto.CreatedAt,
 		UpdatedAt: *dto.UpdatedAt,
 		ChatID:    dto.ChatID,
-		State:     dto.State,
 	}
 }
 

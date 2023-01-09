@@ -1,14 +1,11 @@
-CREATE TYPE states AS ENUM ('wallet_selection');
-
 CREATE TABLE core.users
 (
-    id         INTEGER NOT NULL
+    id         BIGINT NOT NULL
         CONSTRAINT users_pk
             PRIMARY KEY,
-    chat_id    INTEGER NOT NULL,
+    chat_id    BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL,
-    state states
+    updated_at TIMESTAMP NOT NULL
 );
 
 ALTER TABLE core.users

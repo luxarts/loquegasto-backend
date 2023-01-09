@@ -3,10 +3,10 @@ CREATE TABLE core.wallets
     id             SERIAL
         CONSTRAINT wallets_pk
             PRIMARY KEY,
-    user_id        INTEGER     NOT NULL,
+    user_id        BIGINT     NOT NULL,
     name           VARCHAR(64) NOT NULL,
     sanitized_name VARCHAR(64) NOT NULL,
-    balance        INTEGER     NOT NULL,
+    balance        BIGINT     NOT NULL,
     created_at     TIMESTAMP   NOT NULL
 );
 

@@ -3,7 +3,7 @@ CREATE TABLE core.categories
     id             SERIAL
         CONSTRAINT categories_pk
             PRIMARY KEY,
-    user_id        INTEGER     NOT NULL,
+    user_id        BIGINT     NOT NULL,
     name           VARCHAR(64) NOT NULL,
     sanitized_name VARCHAR(64) NOT NULL,
     emoji          VARCHAR(8)

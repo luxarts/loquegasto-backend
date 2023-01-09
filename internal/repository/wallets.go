@@ -18,11 +18,11 @@ const (
 
 type WalletRepository interface {
 	Create(wallet *domain.Wallet) (*domain.Wallet, error)
-	GetAllByUserID(userID int) (*[]domain.Wallet, error)
-	GetBySanitizedName(name string, userID int) (*domain.Wallet, error)
-	GetByID(id int, userID int) (*domain.Wallet, error)
+	GetAllByUserID(userID int64) (*[]domain.Wallet, error)
+	GetBySanitizedName(name string, userID int64) (*domain.Wallet, error)
+	GetByID(id int64, userID int64) (*domain.Wallet, error)
 	UpdateByID(wallet *domain.Wallet) (*domain.Wallet, error)
-	DeleteByID(id int, userID int) error
+	DeleteByID(id int64, userID int64) error
 }
 type walletRepository struct {
 	db         *sqlx.DB
@@ -48,7 +48,7 @@ func (r *walletRepository) Create(wallet *domain.Wallet) (*domain.Wallet, error)
 
 	return wallet, nil
 }
-func (r *walletRepository) GetAllByUserID(userID int) (*[]domain.Wallet, error) {
+func (r *walletRepository) GetAllByUserID(userID int64) (*[]domain.Wallet, error) {
 	query, args, err := r.sqlBuilder.GetAllByUserIDSQL(userID)
 
 	if err != nil {
@@ -74,7 +74,7 @@ func (r *walletRepository) GetAllByUserID(userID int) (*[]domain.Wallet, error) 
 
 	return &results, nil
 }
-func (r *walletRepository) GetBySanitizedName(name string, userID int) (*domain.Wallet, error) {
+func (r *walletRepository) GetBySanitizedName(name string, userID int64) (*domain.Wallet, error) {
 	query, args, err := r.sqlBuilder.GetBySanitizedNameSQL(name, userID)
 
 	if err != nil {
@@ -92,7 +92,7 @@ func (r *walletRepository) GetBySanitizedName(name string, userID int) (*domain.
 
 	return &wallet, nil
 }
-func (r *walletRepository) GetByID(id int, userID int) (*domain.Wallet, error) {
+func (r *walletRepository) GetByID(id int64, userID int64) (*domain.Wallet, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id, userID)
 
 	if err != nil {
@@ -128,7 +128,7 @@ func (r *walletRepository) UpdateByID(wallet *domain.Wallet) (*domain.Wallet, er
 
 	return wallet, nil
 }
-func (r *walletRepository) DeleteByID(id int, userID int) error {
+func (r *walletRepository) DeleteByID(id int64, userID int64) error {
 	query, args, err := r.sqlBuilder.DeleteByIDSQL(id, userID)
 
 	if err != nil {
@@ -159,21 +159,21 @@ func (wsql *walletsSQL) CreateSQL(wallet *domain.Wallet) (string, []interface{},
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) GetAllByUserIDSQL(userID int) (string, []interface{}, error) {
+func (wsql *walletsSQL) GetAllByUserIDSQL(userID int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
 		Where(sq.Eq{"user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) GetByIDSQL(id int, userID int) (string, []interface{}, error) {
+func (wsql *walletsSQL) GetByIDSQL(id int64, userID int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
 		Where(sq.Eq{"id": id, "user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) GetBySanitizedNameSQL(name string, userID int) (string, []interface{}, error) {
+func (wsql *walletsSQL) GetBySanitizedNameSQL(name string, userID int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
 		Where(sq.Eq{"sanitized_name": name, "user_id": userID}).
@@ -188,7 +188,7 @@ func (wsql *walletsSQL) UpdateByIDSQL(wallet *domain.Wallet) (string, []interfac
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) DeleteByIDSQL(id int, userID int) (string, []interface{}, error) {
+func (wsql *walletsSQL) DeleteByIDSQL(id int64, userID int64) (string, []interface{}, error) {
 	return sq.Delete(tableWallets).
 		Where(sq.Eq{"id": id, "user_id": userID}).
 		PlaceholderFormat(sq.Dollar).

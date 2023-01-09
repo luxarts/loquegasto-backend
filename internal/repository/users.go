@@ -21,9 +21,9 @@ const (
 
 type UsersRepository interface {
 	Create(user *domain.User) (*domain.User, error)
-	GetByID(id int) (*domain.User, error)
+	GetByID(id int64) (*domain.User, error)
 	Update(user *domain.User) (*domain.User, error)
-	Delete(id int) error
+	Delete(id int64) error
 }
 type usersRepository struct {
 	db         *sqlx.DB
@@ -51,7 +51,7 @@ func (r *usersRepository) Create(u *domain.User) (*domain.User, error) {
 
 	return u, nil
 }
-func (r *usersRepository) GetByID(id int) (*domain.User, error) {
+func (r *usersRepository) GetByID(id int64) (*domain.User, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id)
 	if err != nil {
 		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
@@ -90,7 +90,7 @@ func (r *usersRepository) Update(u *domain.User) (*domain.User, error) {
 
 	return u, nil
 }
-func (r *usersRepository) Delete(id int) error {
+func (r *usersRepository) Delete(id int64) error {
 	query, args, err := r.sqlBuilder.DeleteByIDSQL(id)
 	if err != nil {
 		return jsend.NewError("failed DeleteByIDSQL", err, http.StatusInternalServerError)
@@ -114,7 +114,7 @@ func (usql *usersSQL) CreateSQL(u *domain.User) (string, []interface{}, error) {
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (usql *usersSQL) GetByIDSQL(id int) (string, []interface{}, error) {
+func (usql *usersSQL) GetByIDSQL(id int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableUsers).
 		Where(sq.Eq{"id": id}).
@@ -131,7 +131,7 @@ func (usql *usersSQL) UpdateSQL(u *domain.User) (string, []interface{}, error) {
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (usql *usersSQL) DeleteByIDSQL(id int) (string, []interface{}, error) {
+func (usql *usersSQL) DeleteByIDSQL(id int64) (string, []interface{}, error) {
 	return sq.Delete(tableUsers).
 		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).
