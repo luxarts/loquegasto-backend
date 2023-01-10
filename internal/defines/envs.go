@@ -1,6 +1,9 @@
 package defines
 
 const (
-	EnvPostgreSQLDBURI = "DATABASE_URL"
-	EnvJWTSecret       = "JWT_SECRET"
+	EnvJWTSecret        = "JWT_SECRET"
+	EnvPostgresUser     = "POSTGRES_USER"
+	EnvPostgresPassword = "POSTGRES_PASSWORD"
+	EnvPostgresHost     = "POSTGRES_HOST"
+	EnvPostgresPort     = "POSTGRES_PORT"
 )

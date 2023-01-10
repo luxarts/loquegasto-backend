@@ -1,0 +1,27 @@
+services:
+  lqg-postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=admin
+    volumes:
+      - ./migrations/core.sql:/docker-entrypoint-initdb.d/1-core.sql
+      - ./migrations/core.categories.sql:/docker-entrypoint-initdb.d/2-core.categories.sql
+      - ./migrations/core.transactions.sql:/docker-entrypoint-initdb.d/3-core.transactions.sql
+      - ./migrations/core.users.sql:/docker-entrypoint-initdb.d/4-core.users.sql
+      - ./migrations/core.wallets.sql:/docker-entrypoint-initdb.d/5-core.wallets.sql
+  lqg-backend:
+    build: .
+    ports:
+      - "9091:8080"
+    links:
+      - "lqg-postgres"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_HOST=lqg-postgres
+      - POSTGRES_PORT=5432
+      - JWT_SECRET=c2VjcmV0
+    depends_on:
+      - lqg-postgres

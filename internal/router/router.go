@@ -28,7 +28,13 @@ func New() *gin.Engine {
 
 func mapRoutes(r *gin.Engine) {
 	// DB connectors, rest clients, and other stuff init
-	db, err := sqlx.Open("postgres", os.Getenv(defines.EnvPostgreSQLDBURI))
+	postgresURI := fmt.Sprintf("postgres://%s:%s@%s:%s/postgres?sslmode=disable",
+		os.Getenv(defines.EnvPostgresUser),
+		os.Getenv(defines.EnvPostgresPassword),
+		os.Getenv(defines.EnvPostgresHost),
+		os.Getenv(defines.EnvPostgresPort),
+	)
+	db, err := sqlx.Open("postgres", postgresURI)
 	if err != nil {
 		panic(fmt.Sprintf("Fail to connect to database: %v", err))
 	}
