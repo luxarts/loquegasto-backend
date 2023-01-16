@@ -1,5 +1,5 @@
 # Build
-FROM golang:alpine3.17 AS build
+FROM golang:alpine AS build
 
 # Destination of copy
 WORKDIR /build
@@ -16,7 +16,7 @@ COPY . ./
 RUN go build -o bin ./cmd/main.go
 
 # Deploy
-FROM alpine:3.17.0
+FROM alpine
 
 RUN adduser -S -D -H -h /app appuser
 USER appuser
