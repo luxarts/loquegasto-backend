@@ -7,13 +7,13 @@ import (
 
 type Transaction struct {
 	ID          string     `db:"uuid"`
-	UserID      int        `db:"user_id"`
-	MsgID       int        `db:"msg_id"`
+	UserID      int64      `db:"user_id"`
+	MsgID       int64      `db:"msg_id"`
 	Amount      int64      `db:"amount"`
 	Description string     `db:"description"`
-	WalletID    int        `db:"wallet_id"`
+	WalletID    int64      `db:"wallet_id"`
 	CreatedAt   *time.Time `db:"created_at"`
-	CategoryID  *int       `db:"category_id"`
+	CategoryID  *int64     `db:"category_id"`
 }
 
 func (txn *Transaction) ToDTO() *TransactionDTO {
@@ -33,13 +33,13 @@ func (txn *Transaction) ToDTO() *TransactionDTO {
 
 type TransactionDTO struct {
 	ID          string     `json:"id,omitempty"`
-	MsgID       int        `json:"msg_id,omitempty"`
-	UserID      int        `json:"user_id,omitempty"`
+	MsgID       int64      `json:"msg_id,omitempty"`
+	UserID      int64      `json:"user_id,omitempty"`
 	Amount      float64    `json:"amount"`
 	Description string     `json:"description"`
-	WalletID    int        `json:"wallet_id"`
+	WalletID    int64      `json:"wallet_id"`
 	CreatedAt   *time.Time `json:"created_at"`
-	CategoryID  *int       `json:"category_id,omitempty"`
+	CategoryID  *int64     `json:"category_id,omitempty"`
 }
 
 func (dto *TransactionDTO) IsValid() bool {

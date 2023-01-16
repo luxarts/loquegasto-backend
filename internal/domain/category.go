@@ -1,8 +1,8 @@
 package domain
 
 type Category struct {
-	ID            *int   `db:"id"`
-	UserID        int    `db:"user_id"`
+	ID            *int64 `db:"id"`
+	UserID        int64  `db:"user_id"`
 	Name          string `db:"name"`
 	SanitizedName string `db:"sanitized_name"`
 	Emoji         string `db:"emoji"`
@@ -19,8 +19,8 @@ func (c *Category) ToDTO() *CategoryDTO {
 }
 
 type CategoryDTO struct {
-	ID            int    `json:"id"`
-	UserID        int    `json:"user_id"`
+	ID            int64  `json:"id"`
+	UserID        int64  `json:"user_id"`
 	Name          string `json:"name"`
 	SanitizedName string `json:"sanitized_name"`
 	Emoji         string `json:"emoji"`

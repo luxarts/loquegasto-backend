@@ -40,7 +40,7 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 		return
 	}
 
-	body.UserID = ctx.GetInt(defines.ParamUserID)
+	body.UserID = ctx.GetInt64(defines.ParamUserID)
 
 	response, err := c.srv.Create(&body)
 
@@ -53,7 +53,7 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 }
 func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 	msgIDStr := ctx.Param(defines.ParamMsgID)
-	msgID, err := strconv.Atoi(msgIDStr)
+	msgID, err := strconv.ParseInt(msgIDStr, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidMsgID)
 		return
@@ -64,12 +64,13 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
-	if !body.IsValidForUpdate() || body.MsgID != msgID {
+	if !body.IsValidForUpdate() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
-	body.UserID = ctx.GetInt(defines.ParamUserID)
+	body.UserID = ctx.GetInt64(defines.ParamUserID)
+	body.MsgID = msgID
 
 	response, err := c.srv.UpdateByMsgID(&body)
 
@@ -81,7 +82,7 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
 func (c *transactionsController) GetAll(ctx *gin.Context) {
-	userID := ctx.GetInt(defines.ParamUserID)
+	userID := ctx.GetInt64(defines.ParamUserID)
 
 	filters := make(domain.TransactionFilters)
 
@@ -92,6 +93,14 @@ func (c *transactionsController) GetAll(ctx *gin.Context) {
 	categoryID, _ := ctx.GetQuery(defines.QueryCategoryID)
 	if categoryID != "" {
 		filters[defines.QueryCategoryID] = categoryID
+	}
+	from, _ := ctx.GetQuery(defines.QueryFrom)
+	if from != "" {
+		filters[defines.QueryFrom] = from
+	}
+	to, _ := ctx.GetQuery(defines.QueryTo)
+	if to != "" {
+		filters[defines.QueryTo] = to
 	}
 
 	response, err := c.srv.GetAll(userID, &filters)

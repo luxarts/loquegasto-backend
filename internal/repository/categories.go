@@ -19,11 +19,11 @@ const (
 
 type CategoriesRepository interface {
 	Create(category *domain.Category) (*domain.Category, error)
-	GetAll(userID int) (*[]domain.Category, error)
-	GetByID(id int, userID int) (*domain.Category, error)
-	GetByName(name string, userID int) (*domain.Category, error)
-	GetByEmoji(emoji string, userID int) (*domain.Category, error)
-	DeleteByID(id int, userID int) error
+	GetAll(userID int64) (*[]domain.Category, error)
+	GetByID(id int64, userID int64) (*domain.Category, error)
+	GetByName(name string, userID int64) (*domain.Category, error)
+	GetByEmoji(emoji string, userID int64) (*domain.Category, error)
+	DeleteByID(id int64, userID int64) error
 	UpdateByID(category *domain.Category) (*domain.Category, error)
 }
 
@@ -51,7 +51,7 @@ func (r *categoriesRepository) Create(category *domain.Category) (*domain.Catego
 
 	return category, nil
 }
-func (r *categoriesRepository) GetAll(userID int) (*[]domain.Category, error) {
+func (r *categoriesRepository) GetAll(userID int64) (*[]domain.Category, error) {
 	query, args, err := r.sqlBuilder.GetAllSQL(userID)
 	if err != nil {
 		return nil, jsend.NewError("failed GetAllSQL", err, http.StatusInternalServerError)
@@ -76,7 +76,7 @@ func (r *categoriesRepository) GetAll(userID int) (*[]domain.Category, error) {
 
 	return &results, nil
 }
-func (r *categoriesRepository) GetByID(id int, userID int) (*domain.Category, error) {
+func (r *categoriesRepository) GetByID(id int64, userID int64) (*domain.Category, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id, userID)
 	if err != nil {
 		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
@@ -93,7 +93,7 @@ func (r *categoriesRepository) GetByID(id int, userID int) (*domain.Category, er
 
 	return &category, nil
 }
-func (r *categoriesRepository) GetByName(name string, userID int) (*domain.Category, error) {
+func (r *categoriesRepository) GetByName(name string, userID int64) (*domain.Category, error) {
 	query, args, err := r.sqlBuilder.GetByNameSQL(name, userID)
 	if err != nil {
 		return nil, jsend.NewError("failed GetByNameSQL", err, http.StatusInternalServerError)
@@ -110,7 +110,7 @@ func (r *categoriesRepository) GetByName(name string, userID int) (*domain.Categ
 
 	return &category, nil
 }
-func (r *categoriesRepository) GetByEmoji(emoji string, userID int) (*domain.Category, error) {
+func (r *categoriesRepository) GetByEmoji(emoji string, userID int64) (*domain.Category, error) {
 	query, args, err := r.sqlBuilder.GetByEmojiSQL(emoji, userID)
 	if err != nil {
 		return nil, jsend.NewError("failed GetByEmojiSQL", err, http.StatusInternalServerError)
@@ -127,7 +127,7 @@ func (r *categoriesRepository) GetByEmoji(emoji string, userID int) (*domain.Cat
 
 	return &category, nil
 }
-func (r *categoriesRepository) DeleteByID(id int, userID int) error {
+func (r *categoriesRepository) DeleteByID(id int64, userID int64) error {
 	query, args, err := r.sqlBuilder.DeleteByIDSQL(id, userID)
 	if err != nil {
 		return jsend.NewError("failed DeleteByIDSQL", err, http.StatusInternalServerError)
@@ -174,14 +174,14 @@ func (csql *categoriesSQL) CreateSQL(category *domain.Category) (string, []inter
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (csql *categoriesSQL) GetAllSQL(userID int) (string, []interface{}, error) {
+func (csql *categoriesSQL) GetAllSQL(userID int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableCategories).
 		Where(sq.Eq{"user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (csql *categoriesSQL) GetByIDSQL(id int, userID int) (string, []interface{}, error) {
+func (csql *categoriesSQL) GetByIDSQL(id int64, userID int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableCategories).
 		Where(sq.And{
@@ -191,7 +191,7 @@ func (csql *categoriesSQL) GetByIDSQL(id int, userID int) (string, []interface{}
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (csql *categoriesSQL) GetByNameSQL(name string, userID int) (string, []interface{}, error) {
+func (csql *categoriesSQL) GetByNameSQL(name string, userID int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableCategories).
 		Where(sq.And{
@@ -201,7 +201,7 @@ func (csql *categoriesSQL) GetByNameSQL(name string, userID int) (string, []inte
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (csql *categoriesSQL) GetByEmojiSQL(emoji string, userID int) (string, []interface{}, error) {
+func (csql *categoriesSQL) GetByEmojiSQL(emoji string, userID int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableCategories).
 		Where(sq.And{
@@ -211,7 +211,7 @@ func (csql *categoriesSQL) GetByEmojiSQL(emoji string, userID int) (string, []in
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (csql *categoriesSQL) DeleteByIDSQL(id int, userID int) (string, []interface{}, error) {
+func (csql *categoriesSQL) DeleteByIDSQL(id int64, userID int64) (string, []interface{}, error) {
 	return sq.Delete(tableCategories).
 		Where(sq.And{
 			sq.Eq{"id": id},

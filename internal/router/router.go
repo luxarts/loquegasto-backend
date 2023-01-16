@@ -28,7 +28,13 @@ func New() *gin.Engine {
 
 func mapRoutes(r *gin.Engine) {
 	// DB connectors, rest clients, and other stuff init
-	db, err := sqlx.Open("postgres", os.Getenv(defines.EnvPostgreSQLDBURI))
+	postgresURI := fmt.Sprintf("postgres://%s:%s@%s:%s/postgres?sslmode=disable",
+		os.Getenv(defines.EnvPostgresUser),
+		os.Getenv(defines.EnvPostgresPassword),
+		os.Getenv(defines.EnvPostgresHost),
+		os.Getenv(defines.EnvPostgresPort),
+	)
+	db, err := sqlx.Open("postgres", postgresURI)
 	if err != nil {
 		panic(fmt.Sprintf("Fail to connect to database: %v", err))
 	}
@@ -91,6 +97,7 @@ func mapRoutes(r *gin.Engine) {
 	authorized.GET(defines.EndpointCategoriesGetAll, catCtrl.GetAll)
 	authorized.DELETE(defines.EndpointCategoriesDeleteByID, catCtrl.DeleteByID)
 	authorized.PUT(defines.EndpointCategoriesUpdateByID, catCtrl.UpdateByID)
+	authorized.GET(defines.EndpointCategoriesGetByID, catCtrl.GetByID)
 }
 
 func healthCheck(ctx *gin.Context) {
@@ -98,7 +105,7 @@ func healthCheck(ctx *gin.Context) {
 }
 func generateToken(ctx *gin.Context) {
 	userID := ctx.Param("userID")
-	userIDInt, err := strconv.Atoi(userID)
+	userIDInt, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
