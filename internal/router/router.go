@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"loquegasto-backend/internal/controller"
 	"loquegasto-backend/internal/defines"
+	"loquegasto-backend/internal/metrics"
 	"loquegasto-backend/internal/middleware"
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/service"
@@ -13,6 +14,7 @@ import (
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/luxarts/jsend-go"
@@ -106,11 +108,22 @@ func healthCheck(ctx *gin.Context) {
 func generateToken(ctx *gin.Context) {
 	userID := ctx.Param("userID")
 	userIDInt, err := strconv.ParseInt(userID, 10, 64)
+
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
+
+		metrics.Status.With(prometheus.Labels{
+			"code":     strconv.Itoa(http.StatusBadRequest),
+			"endpoint": "generateToken",
+		}).Inc()
+
 		return
 	}
 	token := jwt.GenerateToken(nil, &jwt.Payload{Subject: userIDInt})
 
 	ctx.String(http.StatusOK, token)
+	metrics.Status.With(prometheus.Labels{
+		"code":     strconv.Itoa(http.StatusOK),
+		"endpoint": "generateToken",
+	}).Inc()
 }
