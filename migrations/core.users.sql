@@ -5,7 +5,8 @@ CREATE TABLE core.users
             PRIMARY KEY,
     chat_id    BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    updated_at TIMESTAMP NOT NULL,
+    timezone_offset INTEGER
 );
 
 ALTER TABLE core.users
