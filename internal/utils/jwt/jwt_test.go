@@ -18,12 +18,12 @@ func Test_GenerateToken(t *testing.T) {
 		Type:      "JWT",
 	}
 	payload := Payload{
-		Subject: "Cosme Fulanito",
+		Subject: 1234,
 	}
 
 	token := GenerateToken(&header, &payload)
 
-	require.Equal(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJDb3NtZSBGdWxhbml0byJ9.lxYGUGjD0Lgb0OHseRwlhXfhHczcQJB7DVX3o1eVOOo", token)
+	require.Equal(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEyMzR9.fX8ojlIzJ58CobDfLw6BLfn0d420QIRb5xFei8EfK3Y", token)
 	teardownTest()
 }
 func Test_generateSignature(t *testing.T) {

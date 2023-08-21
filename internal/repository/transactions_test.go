@@ -13,7 +13,7 @@ import (
 
 func TestTransactionsSQL_CreateSQL(t *testing.T) {
 	// Given
-	catID := 1
+	var catID int64 = 1
 	createdAt := time.Now()
 	transaction := domain.Transaction{
 		ID:          "uuid",
@@ -46,7 +46,7 @@ func TestTransactionsSQL_CreateSQL(t *testing.T) {
 }
 func TestTransactionsSQL_UpdateByMsgIDSQL(t *testing.T) {
 	// Given
-	catID := 1
+	var catID int64 = 1
 	createdAt := time.Now()
 	transaction := domain.Transaction{
 		ID:          "uuid",
@@ -58,10 +58,14 @@ func TestTransactionsSQL_UpdateByMsgIDSQL(t *testing.T) {
 		CreatedAt:   &createdAt,
 		CategoryID:  &catID,
 	}
-	expectedValues := fmt.Sprintf("[%v %v %v %v %v %v]",
+	expectedValues := fmt.Sprintf("[%v %v %v %v %v %v %v %v %v %v]",
+		transaction.ID,
+		transaction.UserID,
+		transaction.MsgID,
 		transaction.Amount,
 		transaction.Description,
 		transaction.WalletID,
+		transaction.CreatedAt,
 		transaction.CategoryID,
 		transaction.MsgID,
 		transaction.UserID)
@@ -72,13 +76,13 @@ func TestTransactionsSQL_UpdateByMsgIDSQL(t *testing.T) {
 
 	// Then
 	require.Nil(t, err)
-	require.Equal(t, "UPDATE core.transactions SET amount = $1, description = $2, wallet_id = $3, category_id = $4 WHERE (msg_id = $5 AND user_id = $6)", query)
+	require.Equal(t, "UPDATE core.transactions SET uuid = $1, user_id = $2, msg_id = $3, amount = $4, description = $5, wallet_id = $6, created_at = $7, category_id = $8 WHERE (msg_id = $9 AND user_id = $10)", query)
 	require.Equal(t, expectedValues, fmt.Sprintf("%v", args))
 }
 func TestTransactionsSQL_GetAllSQL(t *testing.T) {
 	// Given
-	userID := 123
-	msgID := 456
+	var userID int64 = 123
+	var msgID int64 = 456
 	expectedValues := fmt.Sprintf("[%v %v]", msgID, userID)
 
 	tsql := transactionsSQL{}
@@ -92,7 +96,7 @@ func TestTransactionsSQL_GetAllSQL(t *testing.T) {
 }
 func TestTransactionsSQL_GetByMsgIDSQL(t *testing.T) {
 	// Given
-	userID := 123
+	var userID int64 = 123
 	filters := domain.TransactionFilters{
 		"category_id": "1",
 		"wallet_id":   "2",
