@@ -27,4 +27,8 @@ const (
 	EndpointCategoriesDeleteByID = "/category/:" + ParamID
 	EndpointCategoriesUpdateByID = "/category/:" + ParamID
 	EndpointCategoriesGetByID    = "/category/:" + ParamID
+
+	// OAuth
+	EndpointOAuthLogin    = "/oauth/login"
+	EndpointOAuthCallback = "/oauth/callback"
 )
