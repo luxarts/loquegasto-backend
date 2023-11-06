@@ -41,8 +41,6 @@ func (svc *oAuthService) GetLoginURL(userID int64) (string, error) {
 	svc.statesVerifiers[state] = codeVerifier
 	svc.statesVerifiersMutex.Unlock()
 
-	log.Printf("code_verifier: %s\n", codeVerifier)
-
 	loginURL := svc.repo.GetLoginURL(state, codeChallenge)
 
 	return loginURL, nil
