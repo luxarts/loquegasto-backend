@@ -1,0 +1,239 @@
+openapi: 3.0.3
+info:
+  title: LoQueGasto API
+  description: Core API to manage operations of LoQueGasto. It includes user creation, wallet, categories and transactions management.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Users
+    description: Endpoints to manage users
+  - name: Wallets
+    description: Endpoints to manage wallets
+  - name: Transactions
+    description: Endpoints to manage transactions
+  - name: Categories
+    description: Endpoints to manage categories
+
+paths:
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Create a user
+      description: Create a new user with the Telegram chat ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreateResponse'
+  /wallets:
+    post:
+      tags:
+        - Wallets
+      summary: Create a wallet
+      description: Create a new wallet for the given user
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletCreateRequest'
+      responses:
+        '201':
+          description: Wallet created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletCreateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    get:
+      tags:
+        - Wallets
+      summary: Get all wallets
+      description: Get all wallets of the given user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Wallets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletsGetAllResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+  /wallet/{wallet_id}:
+    get:
+      tags:
+        - Wallets
+      summary: Get a wallet
+      description: Get a wallet of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: wallet_id
+          in: path
+          schema:
+            type: string
+          description: Wallet ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      responses:
+        '200':
+          description: Wallet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletGetResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    put:
+      tags:
+        - Wallets
+      summary: Update a wallet
+      description: Update a wallet of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: wallet_id
+          in: path
+          schema:
+            type: string
+          description: Wallet ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletUpdateRequest'
+      responses:
+        '200':
+          description: Wallet updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletUpdateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    delete:
+      tags:
+        - Wallets
+      summary: Delete a wallet
+      description: Delete a wallet of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: wallet_id
+          in: path
+          schema:
+            type: string
+          description: Wallet ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      responses:
+        '204':
+          description: Wallet deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    InvalidRequestResponse:
+      description: Invalid body
+    UnauthorizedResponse:
+      description: Invalid or missing access token
+  schemas:
+    UserCreateRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: Telegram chat ID
+          example: 1234567890
+    UserCreateResponse:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: Telegram chat ID
+          example: 1234567890
+        created_at:
+          type: integer
+          description: Timestamp when user was created
+          example: 1234567890
+    WalletCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the wallet
+          example: My wallet
+        initial_amount:
+          type: number
+          description: Current amount in the wallet
+          example: 123.45
+        emoji:
+          type: string
+          description: Emoji to identify the wallet
+          example: 💳
+    WalletCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the wallet
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+        name:
+          type: string
+          description: Name of the wallet
+          example: My wallet
+        amount:
+          type: number
+          description: Current amount in the wallet
+          example: 123.45
+        emoji:
+          type: string
+          description: Emoji to identify the wallet
+          example: 💳
+    WalletsGetAllResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/WalletCreateResponse'
+    WalletUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the wallet
+          example: My wallet
+        emoji:
+          type: string
+          description: Emoji to identify the wallet
+          example: 💳
+    WalletUpdateResponse:
+      $ref: '#/components/schemas/WalletCreateResponse'
+    WalletGetResponse:
+      $ref: '#/components/schemas/WalletCreateResponse'
+
