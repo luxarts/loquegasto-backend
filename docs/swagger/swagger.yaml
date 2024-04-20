@@ -458,14 +458,22 @@ components:
           type: string
           description: Name of the wallet
           example: Debit card
-        amount:
+        sanitized_name:
+          type: string
+          description: Name of the wallet sanitized
+          example: debit_card
+        balance:
           type: number
-          description: Current amount in the wallet
+          description: Current balance of the wallet
           example: 123.45
         emoji:
           type: string
           description: Emoji to identify the wallet
           example: 💳
+        created_at:
+          type: string
+          description: Date when wallet was created
+          example: "1970-01-01T01:02:03.4567890-03:00"
     WalletsGetAllResponse:
       type: array
       items:
