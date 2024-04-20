@@ -28,12 +28,14 @@ func New() *gin.Engine {
 
 func mapRoutes(r *gin.Engine) {
 	// DB connectors, rest clients, and other stuff init
-	postgresURI := fmt.Sprintf("postgres://%s:%s@%s:%s/postgres?sslmode=disable",
+	postgresURI := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv(defines.EnvPostgresUser),
 		os.Getenv(defines.EnvPostgresPassword),
 		os.Getenv(defines.EnvPostgresHost),
 		os.Getenv(defines.EnvPostgresPort),
+		os.Getenv(defines.EnvPostgresDB),
 	)
+
 	db, err := sqlx.Open("postgres", postgresURI)
 	if err != nil {
 		panic(fmt.Sprintf("Fail to connect to database: %v", err))
@@ -50,16 +52,16 @@ func mapRoutes(r *gin.Engine) {
 	catRepo := repository.NewCategoriesRepository(db)
 
 	// Services init
-	txnSrv := service.NewTransactionsService(txnRepo, walletsRepo, catRepo)
-	usersSrv := service.NewUsersService(usersRepo)
-	walletsSrv := service.NewWalletsService(walletsRepo)
-	catSrv := service.NewCategoriesService(catRepo)
+	txnSvc := service.NewTransactionsService(txnRepo, walletsRepo, catRepo)
+	usersSvc := service.NewUsersService(usersRepo)
+	walletsSvc := service.NewWalletsService(walletsRepo)
+	catSvc := service.NewCategoriesService(catRepo)
 
 	// Controllers init
-	txnCtrl := controller.NewTransactionsController(txnSrv)
-	usersCtrl := controller.NewUsersController(usersSrv)
-	walletsCtrl := controller.NewWalletsController(walletsSrv)
-	catCtrl := controller.NewCategoriesController(catSrv)
+	txnCtrl := controller.NewTransactionsController(txnSvc)
+	usersCtrl := controller.NewUsersController(usersSvc)
+	walletsCtrl := controller.NewWalletsController(walletsSvc)
+	catCtrl := controller.NewCategoriesController(catSvc)
 
 	// Middleware
 	authMw := middleware.NewAuthMiddleware()
@@ -80,7 +82,7 @@ func mapRoutes(r *gin.Engine) {
 	authorized.GET(defines.EndpointTransactionsGetAll, txnCtrl.GetAll)
 
 	// Users
-	authorized.POST(defines.EndpointUsersCreate, usersCtrl.Create)
+	r.POST(defines.EndpointUsersCreate, usersCtrl.Create)
 	authorized.GET(defines.EndpointUsersGet, usersCtrl.Get)
 	authorized.PUT(defines.EndpointUsersUpdate, usersCtrl.Update)
 	authorized.DELETE(defines.EndpointUsersDelete, usersCtrl.Delete)

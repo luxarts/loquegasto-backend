@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/utils/dbstruct"
@@ -39,9 +40,13 @@ func NewUsersRepository(db *sqlx.DB) UsersRepository {
 
 func (r *usersRepository) Create(u *domain.User) (*domain.User, error) {
 	query, args, err := r.sqlBuilder.CreateSQL(u)
+	if err != nil {
+		return nil, err
+	}
 	_, err = r.db.Exec(query, args...)
 	if err != nil {
-		if pgerr, ok := err.(*pq.Error); ok {
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) {
 			if pgerr.Code == defines.PGCodeDuplicateKey {
 				return nil, jsend.NewError("user ID already exists", nil, http.StatusConflict)
 			}
