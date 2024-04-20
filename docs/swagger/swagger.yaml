@@ -34,6 +34,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserCreateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
   /wallets:
     post:
       tags:
@@ -190,7 +192,7 @@ paths:
                 $ref: '#/components/schemas/CategoriesGetAllResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedResponse'
-  /category/{wallet_id}:
+  /category/{category_id}:
     get:
       tags:
         - Categories
@@ -317,6 +319,16 @@ paths:
           style: form
           explode: false
           description: Category IDs to filter
+          example: [b2834095-c452-45a3-b968-f528cc4ed693,a5105db0-1f79-4037-a026-b965e32f7b17]
+        - name: wallets
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+          description: Wallet IDs to filter
           example: [b2834095-c452-45a3-b968-f528cc4ed693,a5105db0-1f79-4037-a026-b965e32f7b17]
       responses:
         '200':
@@ -462,7 +474,7 @@ components:
         description:
           type: string
           description: Description of the transaction
-          example: Food
+          example: Something
         category_id:
           type: string
           description: ID of the category
