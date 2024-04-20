@@ -39,11 +39,11 @@ paths:
                 $ref: '#/components/schemas/UserCreateResponse'
         '400':
           $ref: '#/components/responses/InvalidRequestResponse'
-  /auth:
+  /auth/telegram:
     post:
       tags:
         - Users
-      summary: Authenticate a user
+      summary: Authenticate a user with Telegram
       description: Returns a token for the given user
       security:
         - ClientID: []
@@ -386,12 +386,12 @@ components:
     AuthRequest:
       type: object
       required:
-        - user_id
+        - chat_id
       properties:
-        user_id:
+        chat_id:
           type: integer
-          description: ID of the user
-          example: 123456789
+          description: Telegram chat ID
+          example: 1234567890
     AuthResponse:
       type: object
       properties:
@@ -401,22 +401,35 @@ components:
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyfQ.t42p4AHef69Tyyi88U6-p0utZYYrg7mmCGhoAd7Zffs
     UserCreateRequest:
       type: object
+      required:
+        - chat_id
       properties:
-        user_id:
+        chat_id:
           type: integer
           description: Telegram chat ID
           example: 1234567890
+        timezone_offset:
+          type: integer
+          description: GMT offset
+          example: -3
     UserCreateResponse:
       type: object
       properties:
-        user_id:
-          type: integer
+        id:
+          type: string
+          description: User ID
+          example: 1738a612-e7c1-45d7-a2a8-5dcf72adeacd
+        chat_id:
           description: Telegram chat ID
           example: 1234567890
         created_at:
           type: integer
           description: Timestamp when user was created
           example: 1234567890
+        timezone_offset:
+          type: integer
+          description: GMT offset
+          example: -3
     WalletCreateRequest:
       type: object
       required:
