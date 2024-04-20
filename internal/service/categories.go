@@ -11,7 +11,7 @@ type CategoriesService interface {
 	GetAll(userID int64) (*[]domain.CategoryDTO, error)
 	GetByName(name string, userID int64) (*domain.CategoryDTO, error)
 	GetByEmoji(emoji string, userID int64) (*domain.CategoryDTO, error)
-	GetByID(ID int64, userID int64) (*domain.CategoryDTO, error)
+	GetByID(ID int64, userID string) (*domain.CategoryDTO, error)
 	DeleteByID(id int64, userID int64) error
 	UpdateByID(categoryDTO *domain.CategoryDTO) (*domain.CategoryDTO, error)
 }
@@ -82,7 +82,7 @@ func (s *categoriesService) UpdateByID(categoryDTO *domain.CategoryDTO) (*domain
 
 	return category.ToDTO(), nil
 }
-func (s *categoriesService) GetByID(ID int64, userID int64) (*domain.CategoryDTO, error) {
+func (s *categoriesService) GetByID(ID int64, userID string) (*domain.CategoryDTO, error) {
 	category, err := s.repo.GetByID(ID, userID)
 	if err != nil {
 		return nil, err

@@ -4,7 +4,7 @@ create table core.users
         constraint users_pk
             primary key,
     chat_id         bigint    not null
-        constraint users_pk_2
+        constraint chat_id
             unique,
     timezone_offset integer   not null,
     created_at      timestamp not null

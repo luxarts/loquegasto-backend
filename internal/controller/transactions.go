@@ -3,6 +3,7 @@ package controller
 import (
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
+	"loquegasto-backend/internal/middleware"
 	"loquegasto-backend/internal/service"
 	"net/http"
 	"strconv"
@@ -40,7 +41,7 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 		return
 	}
 
-	body.UserID = ctx.GetInt64(defines.ParamUserID)
+	body.UserID = ctx.GetString(middleware.CtxKeyUserID)
 
 	response, err := c.srv.Create(&body)
 
@@ -69,7 +70,7 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 		return
 	}
 
-	body.UserID = ctx.GetInt64(defines.ParamUserID)
+	body.UserID = ctx.GetString(middleware.CtxKeyUserID)
 	body.MsgID = msgID
 
 	response, err := c.srv.UpdateByMsgID(&body)

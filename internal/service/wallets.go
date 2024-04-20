@@ -1,18 +1,23 @@
 package service
 
 import (
+	"errors"
+	"github.com/google/uuid"
+	"github.com/luxarts/jsend-go"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/utils/sanitizer"
+	"net/http"
+	"time"
 )
 
 type WalletsService interface {
-	Create(walletDTO *domain.WalletDTO) (*domain.WalletDTO, error)
-	GetByName(userID int64, name string) (*domain.WalletDTO, error)
-	GetByID(userID int64, id int64) (*domain.WalletDTO, error)
-	GetAll(userID int64) (*[]domain.WalletDTO, error)
-	UpdateByID(walletDTO *domain.WalletDTO) (*domain.WalletDTO, error)
-	DeleteByID(id int64, userID int64) error
+	Create(req *domain.WalletCreateRequest, userID string) (*domain.WalletCreateResponse, error)
+	GetByName(userID string, name string) (*domain.WalletCreateResponse, error)
+	GetByID(userID string, id string) (*domain.WalletCreateResponse, error)
+	GetAll(userID string) (*[]domain.WalletCreateResponse, error)
+	UpdateByID(walletDTO *domain.WalletCreateRequest) (*domain.WalletCreateResponse, error)
+	DeleteByID(id string, userID string) error
 }
 type walletsService struct {
 	repo repository.WalletRepository
@@ -23,35 +28,49 @@ func NewWalletsService(repo repository.WalletRepository) WalletsService {
 		repo: repo,
 	}
 }
-func (s *walletsService) Create(walletDTO *domain.WalletDTO) (*domain.WalletDTO, error) {
-	wallet := walletDTO.ToWallet()
+func (s *walletsService) Create(req *domain.WalletCreateRequest, userID string) (*domain.WalletCreateResponse, error) {
+	sanitizedName := sanitizer.Sanitize(req.Name)
 
-	wallet.SanitizedName = sanitizer.Sanitize(walletDTO.Name)
+	// Check if the name already exists for the given user
+	w, err := s.repo.GetBySanitizedName(sanitizedName, userID)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && err != nil && *jsendErr.Code != http.StatusNotFound {
+		return nil, err
+	}
+	if w != nil {
+		return nil, jsend.NewError("wallet name already exists", nil, http.StatusBadRequest)
+	}
 
-	wallet, err := s.repo.Create(wallet)
+	wallet := req.ToWallet()
+	wallet.ID = uuid.NewString()
+	wallet.SanitizedName = sanitizedName
+	wallet.UserID = userID
+	wallet.CreatedAt = time.Now()
+
+	wallet, err = s.repo.Create(wallet)
 	if err != nil {
 		return nil, err
 	}
 
-	return wallet.ToDTO(), nil
+	return wallet.ToWalletCreateResponse(), nil
 }
-func (s *walletsService) GetByName(userID int64, name string) (*domain.WalletDTO, error) {
+func (s *walletsService) GetByName(userID string, name string) (*domain.WalletCreateResponse, error) {
 	wallet, err := s.repo.GetBySanitizedName(sanitizer.Sanitize(name), userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return wallet.ToDTO(), nil
+	return wallet.ToWalletCreateResponse(), nil
 }
-func (s *walletsService) GetByID(userID int64, id int64) (*domain.WalletDTO, error) {
+func (s *walletsService) GetByID(userID string, id string) (*domain.WalletCreateResponse, error) {
 	wallet, err := s.repo.GetByID(id, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return wallet.ToDTO(), nil
+	return wallet.ToWalletCreateResponse(), nil
 }
-func (s *walletsService) GetAll(userID int64) (*[]domain.WalletDTO, error) {
+func (s *walletsService) GetAll(userID string) (*[]domain.WalletCreateResponse, error) {
 	var err error
 	var wallets *[]domain.Wallet
 
@@ -60,14 +79,14 @@ func (s *walletsService) GetAll(userID int64) (*[]domain.WalletDTO, error) {
 		return nil, err
 	}
 
-	var walletDTOs = make([]domain.WalletDTO, 0)
+	var walletDTOs = make([]domain.WalletCreateResponse, len(*wallets))
 	for _, wallet := range *wallets {
-		walletDTOs = append(walletDTOs, *wallet.ToDTO())
+		walletDTOs = append(walletDTOs, *wallet.ToWalletCreateResponse())
 	}
 
 	return &walletDTOs, nil
 }
-func (s *walletsService) UpdateByID(walletDTO *domain.WalletDTO) (*domain.WalletDTO, error) {
+func (s *walletsService) UpdateByID(walletDTO *domain.WalletCreateRequest) (*domain.WalletCreateResponse, error) {
 	wallet := walletDTO.ToWallet()
 
 	wallet.SanitizedName = sanitizer.Sanitize(wallet.Name)
@@ -77,8 +96,8 @@ func (s *walletsService) UpdateByID(walletDTO *domain.WalletDTO) (*domain.Wallet
 		return nil, err
 	}
 
-	return wallet.ToDTO(), nil
+	return wallet.ToWalletCreateResponse(), nil
 }
-func (s *walletsService) DeleteByID(id int64, userID int64) error {
+func (s *walletsService) DeleteByID(id string, userID string) error {
 	return s.repo.DeleteByID(id, userID)
 }

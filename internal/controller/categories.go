@@ -3,6 +3,7 @@ package controller
 import (
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
+	"loquegasto-backend/internal/middleware"
 	"loquegasto-backend/internal/service"
 	"net/http"
 	"strconv"
@@ -170,7 +171,7 @@ func (c *categoriesController) GetByID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
-	userID := ctx.GetInt64(defines.ParamUserID)
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
 	response, err := c.srv.GetByID(id, userID)
 

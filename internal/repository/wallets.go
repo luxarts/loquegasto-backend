@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"errors"
+	"github.com/lib/pq"
+	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/utils/dbstruct"
 	"net/http"
@@ -18,11 +21,11 @@ const (
 
 type WalletRepository interface {
 	Create(wallet *domain.Wallet) (*domain.Wallet, error)
-	GetAllByUserID(userID int64) (*[]domain.Wallet, error)
-	GetBySanitizedName(name string, userID int64) (*domain.Wallet, error)
-	GetByID(id int64, userID int64) (*domain.Wallet, error)
+	GetAllByUserID(userID string) (*[]domain.Wallet, error)
+	GetBySanitizedName(name string, userID string) (*domain.Wallet, error)
+	GetByID(id string, userID string) (*domain.Wallet, error)
 	UpdateByID(wallet *domain.Wallet) (*domain.Wallet, error)
-	DeleteByID(id int64, userID int64) error
+	DeleteByID(id string, userID string) error
 }
 type walletRepository struct {
 	db         *sqlx.DB
@@ -38,17 +41,23 @@ func NewWalletRepository(db *sqlx.DB) WalletRepository {
 func (r *walletRepository) Create(wallet *domain.Wallet) (*domain.Wallet, error) {
 	query, args, err := r.sqlBuilder.CreateSQL(wallet)
 	if err != nil {
-		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed walletRepository.Create.CreateSQL", err, http.StatusInternalServerError)
 	}
 
-	err = r.db.QueryRowx(query, args...).Scan(&wallet.ID)
+	_, err = r.db.Exec(query, args...)
 	if err != nil {
-		return nil, jsend.NewError("failed Scan", err, http.StatusInternalServerError)
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) {
+			if pgerr.Code == defines.PGCodeDuplicateKey {
+				return nil, jsend.NewError("wallet ID already exists", nil, http.StatusConflict)
+			}
+		}
+		return nil, jsend.NewError("failed walletRepository.Create.Exec", err, http.StatusInternalServerError)
 	}
 
 	return wallet, nil
 }
-func (r *walletRepository) GetAllByUserID(userID int64) (*[]domain.Wallet, error) {
+func (r *walletRepository) GetAllByUserID(userID string) (*[]domain.Wallet, error) {
 	query, args, err := r.sqlBuilder.GetAllByUserIDSQL(userID)
 
 	if err != nil {
@@ -74,11 +83,11 @@ func (r *walletRepository) GetAllByUserID(userID int64) (*[]domain.Wallet, error
 
 	return &results, nil
 }
-func (r *walletRepository) GetBySanitizedName(name string, userID int64) (*domain.Wallet, error) {
+func (r *walletRepository) GetBySanitizedName(name string, userID string) (*domain.Wallet, error) {
 	query, args, err := r.sqlBuilder.GetBySanitizedNameSQL(name, userID)
 
 	if err != nil {
-		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed walletRepository.GetBySanitizedName.GetByIDSQL", err, http.StatusInternalServerError)
 	}
 
 	var wallet domain.Wallet
@@ -87,12 +96,12 @@ func (r *walletRepository) GetBySanitizedName(name string, userID int64) (*domai
 		if strings.Contains(err.Error(), "no rows in result set") {
 			return nil, jsend.NewError("wallet not found", nil, http.StatusNotFound)
 		}
-		return nil, jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed walletRepository.GetBySanitizedName.StructScan", err, http.StatusInternalServerError)
 	}
 
 	return &wallet, nil
 }
-func (r *walletRepository) GetByID(id int64, userID int64) (*domain.Wallet, error) {
+func (r *walletRepository) GetByID(id string, userID string) (*domain.Wallet, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id, userID)
 
 	if err != nil {
@@ -128,7 +137,7 @@ func (r *walletRepository) UpdateByID(wallet *domain.Wallet) (*domain.Wallet, er
 
 	return wallet, nil
 }
-func (r *walletRepository) DeleteByID(id int64, userID int64) error {
+func (r *walletRepository) DeleteByID(id string, userID string) error {
 	query, args, err := r.sqlBuilder.DeleteByIDSQL(id, userID)
 
 	if err != nil {
@@ -151,29 +160,27 @@ func (r *walletRepository) DeleteByID(id int64, userID int64) error {
 type walletsSQL struct{}
 
 func (wsql *walletsSQL) CreateSQL(wallet *domain.Wallet) (string, []interface{}, error) {
-	wallet.ID = nil
 	return sq.Insert(tableWallets).
-		Columns(dbstruct.GetColumns(wallet)[1:]...).
-		Values(dbstruct.GetValues(wallet)[1:]...).
-		Suffix("RETURNING \"id\"").
+		Columns(dbstruct.GetColumns(wallet)...).
+		Values(dbstruct.GetValues(wallet)...).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) GetAllByUserIDSQL(userID int64) (string, []interface{}, error) {
+func (wsql *walletsSQL) GetAllByUserIDSQL(userID string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
 		Where(sq.Eq{"user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) GetByIDSQL(id int64, userID int64) (string, []interface{}, error) {
+func (wsql *walletsSQL) GetByIDSQL(id string, userID string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
 		Where(sq.Eq{"id": id, "user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) GetBySanitizedNameSQL(name string, userID int64) (string, []interface{}, error) {
+func (wsql *walletsSQL) GetBySanitizedNameSQL(name string, userID string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
 		Where(sq.Eq{"sanitized_name": name, "user_id": userID}).
@@ -188,7 +195,7 @@ func (wsql *walletsSQL) UpdateByIDSQL(wallet *domain.Wallet) (string, []interfac
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) DeleteByIDSQL(id int64, userID int64) (string, []interface{}, error) {
+func (wsql *walletsSQL) DeleteByIDSQL(id string, userID string) (string, []interface{}, error) {
 	return sq.Delete(tableWallets).
 		Where(sq.Eq{"id": id, "user_id": userID}).
 		PlaceholderFormat(sq.Dollar).

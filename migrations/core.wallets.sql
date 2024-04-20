@@ -1,24 +1,24 @@
-CREATE TABLE core.wallets
+create table core.wallets
 (
-    id             SERIAL
-        CONSTRAINT wallets_pk
-            PRIMARY KEY,
-    user_id        BIGINT     NOT NULL,
-    name           VARCHAR(64) NOT NULL,
-    sanitized_name VARCHAR(64) NOT NULL,
-    balance        BIGINT     NOT NULL,
-    created_at     TIMESTAMP   NOT NULL
+    id             uuid        not null
+        constraint wallets_pk
+            primary key,
+    user_id        uuid        not null
+        constraint wallets_users_id_fk
+            references core.users,
+    name           varchar(64) not null,
+    sanitized_name varchar(64) not null,
+    balance        bigint      not null,
+    emoji          varchar(8),
+    created_at     timestamp   not null
 );
 
-ALTER TABLE core.wallets
-    OWNER TO postgres;
+alter table core.wallets
+    owner to postgres;
 
-CREATE UNIQUE INDEX wallets_id_uindex
-    ON core.wallets (id);
+create index wallets_sanitized_name_index
+    on core.wallets (sanitized_name);
 
-CREATE  INDEX wallets_sanitized_name_index
-    ON core.wallets (sanitized_name);
-
-CREATE INDEX wallets_user_id_index
-    ON core.wallets (user_id);
+create index wallets_user_id_index
+    on core.wallets (user_id);
 

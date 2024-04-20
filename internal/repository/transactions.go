@@ -26,7 +26,7 @@ type TransactionsRepository interface {
 	Create(transaction *domain.Transaction) (*domain.Transaction, error)
 	UpdateByMsgID(transaction *domain.Transaction) (*domain.Transaction, error)
 	GetAll(userID int64, filters *domain.TransactionFilters) (*[]domain.Transaction, error)
-	GetByMsgID(msgID int64, userID int64) (*domain.Transaction, error)
+	GetByMsgID(msgID int64, userID string) (*domain.Transaction, error)
 }
 
 type transactionsRepository struct {
@@ -98,7 +98,7 @@ func (r *transactionsRepository) GetAll(userID int64, filters *domain.Transactio
 
 	return &results, nil
 }
-func (r *transactionsRepository) GetByMsgID(msgID int64, userID int64) (*domain.Transaction, error) {
+func (r *transactionsRepository) GetByMsgID(msgID int64, userID string) (*domain.Transaction, error) {
 	query, args, err := r.sqlBuilder.GetByMsgIDSQL(msgID, userID)
 	if err != nil {
 		return nil, jsend.NewError("failed GetByMsgIDSQL", err, http.StatusInternalServerError)
@@ -168,7 +168,7 @@ func (tsql *transactionsSQL) GetAllSQL(userID int64, filters *domain.Transaction
 	return q.PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (tsql *transactionsSQL) GetByMsgIDSQL(msgID int64, userID int64) (string, []interface{}, error) {
+func (tsql *transactionsSQL) GetByMsgIDSQL(msgID int64, userID string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableTransactions).
 		Where(sq.And{

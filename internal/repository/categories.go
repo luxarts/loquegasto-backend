@@ -20,7 +20,7 @@ const (
 type CategoriesRepository interface {
 	Create(category *domain.Category) (*domain.Category, error)
 	GetAll(userID int64) (*[]domain.Category, error)
-	GetByID(id int64, userID int64) (*domain.Category, error)
+	GetByID(id int64, userID string) (*domain.Category, error)
 	GetByName(name string, userID int64) (*domain.Category, error)
 	GetByEmoji(emoji string, userID int64) (*domain.Category, error)
 	DeleteByID(id int64, userID int64) error
@@ -76,7 +76,7 @@ func (r *categoriesRepository) GetAll(userID int64) (*[]domain.Category, error) 
 
 	return &results, nil
 }
-func (r *categoriesRepository) GetByID(id int64, userID int64) (*domain.Category, error) {
+func (r *categoriesRepository) GetByID(id int64, userID string) (*domain.Category, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id, userID)
 	if err != nil {
 		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
@@ -181,7 +181,7 @@ func (csql *categoriesSQL) GetAllSQL(userID int64) (string, []interface{}, error
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (csql *categoriesSQL) GetByIDSQL(id int64, userID int64) (string, []interface{}, error) {
+func (csql *categoriesSQL) GetByIDSQL(id int64, userID string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableCategories).
 		Where(sq.And{
