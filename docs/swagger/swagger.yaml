@@ -22,6 +22,9 @@ paths:
         - Users
       summary: Create a user
       description: Create a new user with the Telegram chat ID
+      security:
+        - ClientID: []
+        - ClientSecret: []
       requestBody:
         content:
           application/json:
@@ -36,6 +39,27 @@ paths:
                 $ref: '#/components/schemas/UserCreateResponse'
         '400':
           $ref: '#/components/responses/InvalidRequestResponse'
+  /auth:
+    post:
+      tags:
+        - Users
+      summary: Authenticate a user
+      description: Returns a token for the given user
+      security:
+        - ClientID: []
+        - ClientSecret: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: User authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
   /wallets:
     post:
       tags:
@@ -345,12 +369,36 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    ClientID:
+      type: apiKey
+      in: header
+      name: client_id
+    ClientSecret:
+      type: apiKey
+      in: header
+      name: client_secret
   responses:
     InvalidRequestResponse:
       description: Invalid body
     UnauthorizedResponse:
       description: Invalid or missing access token
   schemas:
+    AuthRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: integer
+          description: ID of the user
+          example: 123456789
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Token for the user
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyfQ.t42p4AHef69Tyyi88U6-p0utZYYrg7mmCGhoAd7Zffs
     UserCreateRequest:
       type: object
       properties:
