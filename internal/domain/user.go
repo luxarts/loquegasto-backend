@@ -37,3 +37,15 @@ func (body *UserCreateRequest) ToUser() *User {
 func (body *UserCreateRequest) IsValid() bool {
 	return body.ChatID != 0
 }
+
+type UserAuthWithTelegramRequest struct {
+	ChatID int64 `json:"chat_id"`
+}
+
+func (u *UserAuthWithTelegramRequest) IsValid() bool {
+	return u.ChatID != 0
+}
+
+type UserAuthWithTelegramResponse struct {
+	AccessToken string `json:"access_token"`
+}

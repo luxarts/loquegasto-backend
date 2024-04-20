@@ -22,7 +22,8 @@ const (
 
 type UsersRepository interface {
 	Create(user *domain.User) (*domain.User, error)
-	GetByID(id int64) (*domain.User, error)
+	GetByID(id string) (*domain.User, error)
+	GetByChatID(id int64) (*domain.User, error)
 }
 type usersRepository struct {
 	db         *sqlx.DB
@@ -54,10 +55,10 @@ func (r *usersRepository) Create(u *domain.User) (*domain.User, error) {
 
 	return u, nil
 }
-func (r *usersRepository) GetByID(id int64) (*domain.User, error) {
+func (r *usersRepository) GetByID(id string) (*domain.User, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id)
 	if err != nil {
-		return nil, jsend.NewError("failed usersRepository.Create.GetByIDSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed usersRepository.GetByID.GetByIDSQL", err, http.StatusInternalServerError)
 	}
 
 	var user domain.User
@@ -66,7 +67,24 @@ func (r *usersRepository) GetByID(id int64) (*domain.User, error) {
 		if err == sql.ErrNoRows {
 			return nil, jsend.NewError("user not found", nil, http.StatusNotFound)
 		}
-		return nil, jsend.NewError("failed usersRepository.Create.StructScan", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed usersRepository.GetByID.StructScan", err, http.StatusInternalServerError)
+	}
+
+	return &user, nil
+}
+func (r *usersRepository) GetByChatID(id int64) (*domain.User, error) {
+	query, args, err := r.sqlBuilder.GetByChatIDSQL(id)
+	if err != nil {
+		return nil, jsend.NewError("failed usersRepository.GetByChatID.GetByChatIDSQL", err, http.StatusInternalServerError)
+	}
+
+	var user domain.User
+	err = r.db.QueryRowx(query, args...).StructScan(&user)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, jsend.NewError("user not found", nil, http.StatusNotFound)
+		}
+		return nil, jsend.NewError("failed usersRepository.GetByChatID.StructScan", err, http.StatusInternalServerError)
 	}
 
 	return &user, nil
@@ -82,10 +100,17 @@ func (usql *usersSQL) CreateSQL(u *domain.User) (string, []interface{}, error) {
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (usql *usersSQL) GetByIDSQL(id int64) (string, []interface{}, error) {
+func (usql *usersSQL) GetByIDSQL(id string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableUsers).
 		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+}
+func (usql *usersSQL) GetByChatIDSQL(id int64) (string, []interface{}, error) {
+	return sq.Select("*").
+		From(tableUsers).
+		Where(sq.Eq{"chat_id": id}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

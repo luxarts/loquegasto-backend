@@ -2,17 +2,14 @@ package router
 
 import (
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"loquegasto-backend/internal/controller"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/middleware"
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/service"
-	"loquegasto-backend/internal/utils/jwt"
 	"net/http"
 	"os"
-	"strconv"
-
-	"github.com/jmoiron/sqlx"
 
 	"github.com/gin-gonic/gin"
 	"github.com/luxarts/jsend-go"
@@ -67,7 +64,6 @@ func mapRoutes(r *gin.Engine) {
 	authMw := middleware.NewAuthMiddleware()
 
 	// Endpoints
-	r.GET("/token/:userID", generateToken)
 
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)
@@ -83,6 +79,7 @@ func mapRoutes(r *gin.Engine) {
 
 	// Users
 	r.POST(defines.EndpointUsersCreate, usersCtrl.Create)
+	r.POST(defines.EndpointUserAuthWithTelegram, usersCtrl.AuthWithTelegram)
 
 	// Wallets
 	authorized.POST(defines.EndpointWalletsCreate, walletsCtrl.Create)
@@ -101,15 +98,4 @@ func mapRoutes(r *gin.Engine) {
 
 func healthCheck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, jsend.NewSuccess("pong"))
-}
-func generateToken(ctx *gin.Context) {
-	userID := ctx.Param("userID")
-	userIDInt, err := strconv.ParseInt(userID, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
-		return
-	}
-	token := jwt.GenerateToken(nil, &jwt.Payload{Subject: userIDInt})
-
-	ctx.String(http.StatusOK, token)
 }
