@@ -266,7 +266,67 @@ paths:
           description: Category deleted
         '401':
           $ref: '#/components/responses/UnauthorizedResponse'
-
+  /transactions:
+    post:
+      tags:
+        - Transactions
+      summary: Create a transaction
+      description: Create a new transaction for the given user
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionCreateRequest'
+      responses:
+        '201':
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionCreateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    get:
+      tags:
+        - Transactions
+      summary: Get all transactions
+      description: Get all transactions of the given user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: integer
+          description: Timestamp since when to filter
+        - name: to
+          in: query
+          schema:
+            type: integer
+          description: Timestamp until when to filter
+        - name: categories
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+          description: Category IDs to filter
+          example: [b2834095-c452-45a3-b968-f528cc4ed693,a5105db0-1f79-4037-a026-b965e32f7b17]
+      responses:
+        '200':
+          description: Transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionsGetAllResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
 components:
   securitySchemes:
     BearerAuth:
@@ -352,7 +412,6 @@ components:
       $ref: '#/components/schemas/WalletCreateResponse'
     WalletGetResponse:
       $ref: '#/components/schemas/WalletCreateResponse'
-
     CategoryCreateRequest:
       type: object
       required:
@@ -391,4 +450,63 @@ components:
       $ref: '#/components/schemas/CategoryCreateResponse'
     CategoryGetResponse:
       $ref: '#/components/schemas/CategoryCreateResponse'
-
+    TransactionCreateRequest:
+      type: object
+      required:
+        - name
+        - category_id
+        - wallet_id
+        - amount
+        - created_at
+      properties:
+        description:
+          type: string
+          description: Description of the transaction
+          example: Food
+        category_id:
+          type: string
+          description: ID of the category
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+        wallet_id:
+          type: string
+          description: ID of the wallet
+          example: b2834095-c452-45a3-b968-f528cc4ed693
+        amount:
+          type: number
+          description: Amount of the transaction. A negative value means income funds in the wallet.
+          example: 123.45
+        created_at:
+          type: integer
+          description: Timestamp when the transaction was created
+          example: 1234567890
+    TransactionCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the transaction
+          example: 228476dd-9063-42fb-80ca-96fc176db1e5
+        description:
+          type: string
+          description: Description of the transaction
+          example: Food
+        category_id:
+          type: string
+          description: ID of the category
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+        wallet_id:
+          type: string
+          description: ID of the wallet
+          example: b2834095-c452-45a3-b968-f528cc4ed693
+        amount:
+          type: number
+          description: Amount of the transaction. A negative value means income funds in the wallet.
+          example: 123.45
+        created_at:
+          type: integer
+          description: Timestamp when the transaction was created
+          example: 1234567890
+    TransactionsGetAllResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/TransactionCreateResponse'
