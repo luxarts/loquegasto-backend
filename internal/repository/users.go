@@ -23,8 +23,6 @@ const (
 type UsersRepository interface {
 	Create(user *domain.User) (*domain.User, error)
 	GetByID(id int64) (*domain.User, error)
-	Update(user *domain.User) (*domain.User, error)
-	Delete(id int64) error
 }
 type usersRepository struct {
 	db         *sqlx.DB
@@ -41,7 +39,7 @@ func NewUsersRepository(db *sqlx.DB) UsersRepository {
 func (r *usersRepository) Create(u *domain.User) (*domain.User, error) {
 	query, args, err := r.sqlBuilder.CreateSQL(u)
 	if err != nil {
-		return nil, err
+		return nil, jsend.NewError("failed usersRepository.Create.CreateSQL", err, http.StatusInternalServerError)
 	}
 	_, err = r.db.Exec(query, args...)
 	if err != nil {
@@ -51,7 +49,7 @@ func (r *usersRepository) Create(u *domain.User) (*domain.User, error) {
 				return nil, jsend.NewError("user ID already exists", nil, http.StatusConflict)
 			}
 		}
-		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed usersRepository.Create.Exec", err, http.StatusInternalServerError)
 	}
 
 	return u, nil
@@ -59,7 +57,7 @@ func (r *usersRepository) Create(u *domain.User) (*domain.User, error) {
 func (r *usersRepository) GetByID(id int64) (*domain.User, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id)
 	if err != nil {
-		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed usersRepository.Create.GetByIDSQL", err, http.StatusInternalServerError)
 	}
 
 	var user domain.User
@@ -68,45 +66,10 @@ func (r *usersRepository) GetByID(id int64) (*domain.User, error) {
 		if err == sql.ErrNoRows {
 			return nil, jsend.NewError("user not found", nil, http.StatusNotFound)
 		}
-		return nil, jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed usersRepository.Create.StructScan", err, http.StatusInternalServerError)
 	}
 
 	return &user, nil
-}
-func (r *usersRepository) Update(u *domain.User) (*domain.User, error) {
-	query, args, err := r.sqlBuilder.UpdateSQL(u)
-	if err != nil {
-		return nil, jsend.NewError("failed UpdateSQL", err, http.StatusInternalServerError)
-	}
-
-	result, err := r.db.Exec(query, args...)
-
-	if err != nil {
-		return nil, jsend.NewError("failed Exec", err, http.StatusInternalServerError)
-	}
-
-	affected, err := result.RowsAffected()
-	if err != nil {
-		return nil, jsend.NewError("failed RowsAffected", err, http.StatusInternalServerError)
-	}
-	if affected == 0 {
-		return nil, jsend.NewError("user not found", nil, http.StatusNotFound)
-	}
-
-	return u, nil
-}
-func (r *usersRepository) Delete(id int64) error {
-	query, args, err := r.sqlBuilder.DeleteByIDSQL(id)
-	if err != nil {
-		return jsend.NewError("failed DeleteByIDSQL", err, http.StatusInternalServerError)
-	}
-
-	_, err = r.db.Exec(query, args...)
-	if err != nil {
-		return jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
-	}
-
-	return nil
 }
 
 // SQL builders
@@ -122,22 +85,6 @@ func (usql *usersSQL) CreateSQL(u *domain.User) (string, []interface{}, error) {
 func (usql *usersSQL) GetByIDSQL(id int64) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableUsers).
-		Where(sq.Eq{"id": id}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-}
-func (usql *usersSQL) UpdateSQL(u *domain.User) (string, []interface{}, error) {
-	builder := sq.Update(tableUsers)
-
-	builder = dbstruct.SetValues(builder, u)
-
-	return builder.
-		Where(sq.Eq{"id": u.ID}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-}
-func (usql *usersSQL) DeleteByIDSQL(id int64) (string, []interface{}, error) {
-	return sq.Delete(tableUsers).
 		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

@@ -10,9 +10,6 @@ const (
 
 	// Users
 	EndpointUsersCreate = "/users"
-	EndpointUsersGet    = "/user"
-	EndpointUsersUpdate = "/user"
-	EndpointUsersDelete = "/user"
 
 	// Wallets
 	EndpointWalletsCreate     = "/wallets"
