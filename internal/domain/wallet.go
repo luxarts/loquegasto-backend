@@ -21,7 +21,6 @@ type WalletCreateRequest struct {
 
 type WalletCreateResponse struct {
 	ID            string    `json:"id"`
-	UserID        string    `json:"user_id"`
 	Name          string    `json:"name"`
 	SanitizedName string    `json:"sanitized_name"`
 	Emoji         string    `json:"emoji"`
@@ -32,8 +31,8 @@ type WalletCreateResponse struct {
 func (w *Wallet) ToWalletCreateResponse() *WalletCreateResponse {
 	return &WalletCreateResponse{
 		ID:            w.ID,
-		UserID:        w.UserID,
 		Name:          w.Name,
+		Emoji:         w.Emoji,
 		SanitizedName: w.SanitizedName,
 		Balance:       float64(w.Balance) / 100.0,
 		CreatedAt:     w.CreatedAt,
