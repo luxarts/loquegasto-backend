@@ -10,10 +10,10 @@ tags:
     description: Endpoints to manage users
   - name: Wallets
     description: Endpoints to manage wallets
-  - name: Transactions
-    description: Endpoints to manage transactions
   - name: Categories
     description: Endpoints to manage categories
+  - name: Transactions
+    description: Endpoints to manage transactions
 
 paths:
   /users:
@@ -150,6 +150,122 @@ paths:
           description: Wallet deleted
         '401':
           $ref: '#/components/responses/UnauthorizedResponse'
+  /categories:
+    post:
+      tags:
+        - Categories
+      summary: Create a category
+      description: Create a new category for the given user
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryCreateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      description: Get all categories of the given user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriesGetAllResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+  /category/{wallet_id}:
+    get:
+      tags:
+        - Categories
+      summary: Get a category
+      description: Get a category of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category_id
+          in: path
+          schema:
+            type: string
+          description: Category ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      responses:
+        '200':
+          description: Category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryGetResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    put:
+      tags:
+        - Categories
+      summary: Update a category
+      description: Update a category of the given user by ID
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: category_id
+          in: path
+          schema:
+            type: string
+          description: Category ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdateRequest'
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryUpdateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    delete:
+      tags:
+        - Categories
+      summary: Delete a category
+      description: Delete a category of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category_id
+          in: path
+          schema:
+            type: string
+          description: Category ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      responses:
+        '204':
+          description: Category deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
 
 components:
   securitySchemes:
@@ -189,7 +305,7 @@ components:
         name:
           type: string
           description: Name of the wallet
-          example: My wallet
+          example: Debit card
         initial_amount:
           type: number
           description: Current amount in the wallet
@@ -208,7 +324,7 @@ components:
         name:
           type: string
           description: Name of the wallet
-          example: My wallet
+          example: Debit card
         amount:
           type: number
           description: Current amount in the wallet
@@ -227,7 +343,7 @@ components:
         name:
           type: string
           description: Name of the wallet
-          example: My wallet
+          example: Debit card
         emoji:
           type: string
           description: Emoji to identify the wallet
@@ -236,4 +352,43 @@ components:
       $ref: '#/components/schemas/WalletCreateResponse'
     WalletGetResponse:
       $ref: '#/components/schemas/WalletCreateResponse'
+
+    CategoryCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the category
+          example: Food
+        emoji:
+          type: string
+          description: Emoji to identify the category
+          example: 🍽
+    CategoryCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the category
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+        name:
+          type: string
+          description: Name of the category
+          example: Food
+        emoji:
+          type: string
+          description: Emoji to identify the category
+          example: 🍽
+    CategoriesGetAllResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/CategoryCreateResponse'
+    CategoryUpdateRequest:
+      $ref: '#/components/schemas/CategoryCreateRequest'
+    CategoryUpdateResponse:
+      $ref: '#/components/schemas/CategoryCreateResponse'
+    CategoryGetResponse:
+      $ref: '#/components/schemas/CategoryCreateResponse'
 
