@@ -2,13 +2,12 @@ package controller
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
+	"github.com/luxarts/jsend-go"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/service"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
-	"github.com/luxarts/jsend-go"
 )
 
 type UsersController interface {

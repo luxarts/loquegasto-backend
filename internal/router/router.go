@@ -62,9 +62,9 @@ func mapRoutes(r *gin.Engine) {
 
 	// Middleware
 	authMw := middleware.NewAuthMiddleware()
+	appAuthMw := middleware.NewAppAuthMiddleware()
 
 	// Endpoints
-
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)
 
@@ -72,14 +72,17 @@ func mapRoutes(r *gin.Engine) {
 	authorized := r.Group("/")
 	authorized.Use(authMw.Check)
 
+	appAuthorizer := r.Group("/")
+	appAuthorizer.Use(appAuthMw.Check)
+
+	// Users
+	appAuthorizer.POST(defines.EndpointUsersCreate, usersCtrl.Create)
+	appAuthorizer.POST(defines.EndpointUserAuthWithTelegram, usersCtrl.AuthWithTelegram)
+
 	// Transactions
 	authorized.POST(defines.EndpointTransactionsCreate, txnCtrl.Create)
 	authorized.PUT(defines.EndpointTransactionsUpdateByMsgID, txnCtrl.UpdateByMsgID)
 	authorized.GET(defines.EndpointTransactionsGetAll, txnCtrl.GetAll)
-
-	// Users
-	r.POST(defines.EndpointUsersCreate, usersCtrl.Create)
-	r.POST(defines.EndpointUserAuthWithTelegram, usersCtrl.AuthWithTelegram)
 
 	// Wallets
 	authorized.POST(defines.EndpointWalletsCreate, walletsCtrl.Create)

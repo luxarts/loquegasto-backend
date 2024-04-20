@@ -6,6 +6,7 @@ var (
 	ErrInvalidID          = jsend.NewFail("invalid id")
 	ErrInvalidMsgID       = jsend.NewFail("invalid msgID")
 	ErrInvalidBody        = jsend.NewFail("invalid body")
+	ErrUnauthorized       = jsend.NewFail("unauthorized")
 	ErrNameAlreadyExists  = jsend.NewFail(map[string]string{"name": "already used"})
 	ErrEmojiAlreadyExists = jsend.NewFail(map[string]string{"emoji": "already used"})
 	ErrUserAlreadyExists  = jsend.NewFail(map[string]string{"user": "already used"})
