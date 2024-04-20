@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/middleware"
@@ -30,44 +31,25 @@ func NewCategoriesController(srv service.CategoriesService) CategoriesController
 }
 
 func (c *categoriesController) Create(ctx *gin.Context) {
-	var body domain.CategoryDTO
+	var body domain.CategoryCreateRequest
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
-	body.UserID = ctx.GetInt64(defines.ParamUserID)
-
 	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
-	category, err := c.srv.GetByName(body.Name, body.UserID)
-	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
-		ctx.JSON(*err.Code, err)
-		return
-	}
-	if category != nil {
-		ctx.JSON(http.StatusConflict, defines.ErrNameAlreadyExists)
-		return
-	}
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
-	category, err = c.srv.GetByEmoji(body.Emoji, body.UserID)
-	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
-		ctx.JSON(*err.Code, err)
-		return
-	}
-	if category != nil {
-		ctx.JSON(http.StatusConflict, defines.ErrEmojiAlreadyExists)
-		return
-	}
+	response, err := c.srv.Create(&body, userID)
 
-	response, err := c.srv.Create(&body)
-
-	if err, isError := err.(*jsend.Body); isError && err != nil {
-		ctx.JSON(*err.Code, err)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && jsendErr != nil {
+		ctx.JSON(*jsendErr.Code, jsendErr)
 		return
 	}
 
@@ -113,7 +95,7 @@ func (c *categoriesController) DeleteByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, jsend.NewSuccess(nil))
 }
 func (c *categoriesController) UpdateByID(ctx *gin.Context) {
-	var body domain.CategoryDTO
+	var body domain.CategoryCreateRequest
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
@@ -125,8 +107,6 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
 		return
 	}
-	body.ID = id
-	body.UserID = ctx.GetInt64(defines.ParamUserID)
 
 	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
@@ -134,23 +114,23 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 	}
 
 	// Check if name already used
-	category, err := c.srv.GetByName(body.Name, body.UserID)
+	category, err := c.srv.GetByName(body.Name, id)
 	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
 		ctx.JSON(*err.Code, err)
 		return
 	}
-	if category != nil && category.ID != body.ID {
+	if category != nil && category.ID != idStr {
 		ctx.JSON(http.StatusConflict, defines.ErrNameAlreadyExists)
 		return
 	}
 
 	// Check if emoji already used
-	category, err = c.srv.GetByEmoji(body.Emoji, body.UserID)
+	category, err = c.srv.GetByEmoji(body.Emoji, id)
 	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
 		ctx.JSON(*err.Code, err)
 		return
 	}
-	if category != nil && category.ID != body.ID {
+	if category != nil && category.ID != idStr {
 		ctx.JSON(http.StatusConflict, defines.ErrEmojiAlreadyExists)
 		return
 	}

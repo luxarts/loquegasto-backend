@@ -87,7 +87,7 @@ func (r *walletRepository) GetBySanitizedName(name string, userID string) (*doma
 	query, args, err := r.sqlBuilder.GetBySanitizedNameSQL(name, userID)
 
 	if err != nil {
-		return nil, jsend.NewError("failed walletRepository.GetBySanitizedName.GetByIDSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed walletRepository.GetBySanitizedName.GetBySanitizedNameSQL", err, http.StatusInternalServerError)
 	}
 
 	var wallet domain.Wallet

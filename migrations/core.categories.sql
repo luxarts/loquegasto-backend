@@ -1,22 +1,23 @@
-CREATE TABLE core.categories
+create table core.categories
 (
-    id             SERIAL
-        CONSTRAINT categories_pk
-            PRIMARY KEY,
-    user_id        BIGINT     NOT NULL,
-    name           VARCHAR(64) NOT NULL,
-    sanitized_name VARCHAR(64) NOT NULL,
-    emoji          VARCHAR(8)
+    id             uuid        not null
+        constraint categories_pk
+            primary key,
+    user_id        uuid        not null
+        constraint categories_users_id_fk
+            references core.users,
+    name           varchar(64) not null,
+    sanitized_name varchar(64) not null,
+    emoji          varchar(8),
+    created_at     timestamp   not null
 );
 
-ALTER TABLE core.categories
-    OWNER TO postgres;
+alter table core.categories
+    owner to postgres;
 
-CREATE INDEX categories_emoji_index
-    ON core.categories (emoji);
+create index categories_sanitized_name_index
+    on core.categories (sanitized_name);
 
-CREATE UNIQUE INDEX categories_id_uindex
-    ON core.categories (id);
+create index categories_user_id_index
+    on core.categories (user_id);
 
-CREATE INDEX categories_sanitized_name_index
-    ON core.categories (sanitized_name);
