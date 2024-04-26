@@ -6,68 +6,67 @@ import (
 )
 
 type Transaction struct {
-	ID          string     `db:"uuid"`
-	UserID      string     `db:"user_id"`
-	MsgID       int64      `db:"msg_id"`
-	Amount      int64      `db:"amount"`
-	Description string     `db:"description"`
-	WalletID    string     `db:"wallet_id"`
-	CreatedAt   *time.Time `db:"created_at"`
-	CategoryID  *int64     `db:"category_id"`
+	ID          string    `db:"uuid"`
+	UserID      string    `db:"user_id"`
+	Amount      int64     `db:"amount"`
+	Description string    `db:"description"`
+	WalletID    string    `db:"wallet_id"`
+	CategoryID  string    `db:"category_id"`
+	MsgID       *int64    `db:"msg_id"`
+	CreatedAt   time.Time `db:"created_at"`
 }
 
-func (txn *Transaction) ToDTO() *TransactionDTO {
-	dto := TransactionDTO{
+func (txn *Transaction) ToTransactionCreateResponse() *TransactionCreateResponse {
+	return &TransactionCreateResponse{
 		ID:          txn.ID,
-		MsgID:       txn.MsgID,
-		UserID:      txn.UserID,
 		Amount:      float64(txn.Amount) / 100.0,
 		Description: txn.Description,
 		WalletID:    txn.WalletID,
 		CreatedAt:   txn.CreatedAt,
 		CategoryID:  txn.CategoryID,
 	}
-
-	return &dto
 }
 
-type TransactionDTO struct {
-	ID          string     `json:"id,omitempty"`
-	MsgID       int64      `json:"msg_id,omitempty"`
-	UserID      string     `json:"user_id,omitempty"`
+type TransactionCreateRequest struct {
 	Amount      float64    `json:"amount"`
 	Description string     `json:"description"`
 	WalletID    string     `json:"wallet_id"`
+	CategoryID  string     `json:"category_id"`
 	CreatedAt   *time.Time `json:"created_at"`
-	CategoryID  *int64     `json:"category_id,omitempty"`
+	MsgID       *int64     `json:"msg_id"`
 }
 
-func (dto *TransactionDTO) IsValid() bool {
-	return dto.Description != "" &&
-		dto.Amount != 0 &&
-		dto.MsgID != 0 &&
-		dto.WalletID != "" &&
-		dto.CreatedAt != nil
+type TransactionCreateResponse struct {
+	ID          string    `json:"id"`
+	Amount      float64   `json:"amount"`
+	Description string    `json:"description"`
+	WalletID    string    `json:"wallet_id"`
+	CategoryID  string    `json:"category_id"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
-func (dto *TransactionDTO) IsValidForUpdate() bool {
-	return dto.Description != "" &&
-		dto.Amount != 0
+func (req *TransactionCreateRequest) IsValid() bool {
+	return req.Description != "" &&
+		req.Amount != 0 &&
+		req.WalletID != "" &&
+		req.CategoryID != "" &&
+		req.CreatedAt != nil
 }
 
-func (dto *TransactionDTO) ToTransaction() *Transaction {
-	txn := Transaction{
-		ID:          dto.ID,
-		MsgID:       dto.MsgID,
-		Amount:      int64(dto.Amount * 100),
-		UserID:      dto.UserID,
-		Description: dto.Description,
-		WalletID:    dto.WalletID,
-		CreatedAt:   dto.CreatedAt,
-		CategoryID:  dto.CategoryID,
+func (req *TransactionCreateRequest) IsValidForUpdate() bool {
+	return req.Description != "" &&
+		req.Amount != 0
+}
+
+func (req *TransactionCreateRequest) ToTransaction() *Transaction {
+	return &Transaction{
+		MsgID:       req.MsgID,
+		Amount:      int64(req.Amount * 100),
+		Description: req.Description,
+		WalletID:    req.WalletID,
+		CreatedAt:   *req.CreatedAt,
+		CategoryID:  req.CategoryID,
 	}
-
-	return &txn
 }
 
 type TransactionFilters map[string]string

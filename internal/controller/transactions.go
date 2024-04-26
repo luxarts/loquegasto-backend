@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/middleware"
@@ -29,7 +30,7 @@ func NewTransactionsController(srv service.TransactionsService) TransactionsCont
 }
 
 func (c *transactionsController) Create(ctx *gin.Context) {
-	var body domain.TransactionDTO
+	var body domain.TransactionCreateRequest
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
@@ -41,12 +42,13 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 		return
 	}
 
-	body.UserID = ctx.GetString(middleware.CtxKeyUserID)
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
-	response, err := c.srv.Create(&body)
+	response, err := c.srv.Create(&body, userID)
 
-	if err, isError := err.(*jsend.Body); isError && err != nil {
-		ctx.JSON(*err.Code, err)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && jsendErr != nil {
+		ctx.JSON(*jsendErr.Code, jsendErr)
 		return
 	}
 
@@ -54,13 +56,13 @@ func (c *transactionsController) Create(ctx *gin.Context) {
 }
 func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 	msgIDStr := ctx.Param(defines.ParamMsgID)
-	msgID, err := strconv.ParseInt(msgIDStr, 10, 64)
+	_, err := strconv.ParseInt(msgIDStr, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidMsgID)
 		return
 	}
 
-	var body domain.TransactionDTO
+	var body domain.TransactionCreateRequest
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
@@ -70,10 +72,9 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 		return
 	}
 
-	body.UserID = ctx.GetString(middleware.CtxKeyUserID)
-	body.MsgID = msgID
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
-	response, err := c.srv.UpdateByMsgID(&body)
+	response, err := c.srv.UpdateByMsgID(&body, userID)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)
@@ -83,8 +84,6 @@ func (c *transactionsController) UpdateByMsgID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
 func (c *transactionsController) GetAll(ctx *gin.Context) {
-	userID := ctx.GetInt64(defines.ParamUserID)
-
 	filters := make(domain.TransactionFilters)
 
 	walletID, _ := ctx.GetQuery(defines.QueryWalletID)
@@ -104,7 +103,9 @@ func (c *transactionsController) GetAll(ctx *gin.Context) {
 		filters[defines.QueryTo] = to
 	}
 
-	response, err := c.srv.GetAll(userID, &filters)
+	userID := ctx.GetString(middleware.CtxKeyUserID)
+
+	response, err := c.srv.GetAll(&filters, userID)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)

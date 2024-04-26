@@ -78,14 +78,10 @@ func (c *categoriesController) GetAll(ctx *gin.Context) {
 }
 func (c *categoriesController) DeleteByID(ctx *gin.Context) {
 	idStr := ctx.Param(defines.ParamID)
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
-		return
-	}
+
 	userID := ctx.GetInt64(defines.ParamUserID)
 
-	err = c.srv.DeleteByID(id, userID)
+	err := c.srv.DeleteByID(idStr, userID)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)
@@ -146,14 +142,10 @@ func (c *categoriesController) UpdateByID(ctx *gin.Context) {
 }
 func (c *categoriesController) GetByID(ctx *gin.Context) {
 	idStr := ctx.Param(defines.ParamID)
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
-		return
-	}
+
 	userID := ctx.GetString(middleware.CtxKeyUserID)
 
-	response, err := c.srv.GetByID(id, userID)
+	response, err := c.srv.GetByID(idStr, userID)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)

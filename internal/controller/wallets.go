@@ -92,7 +92,6 @@ func (c *walletsController) UpdateByID(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
-	//id := ctx.Param(defines.ParamID)
 
 	userID := ctx.GetString(middleware.CtxKeyUserID)
 

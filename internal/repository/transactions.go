@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+	"github.com/lib/pq"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/utils/dbstruct"
@@ -14,7 +16,6 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -23,9 +24,9 @@ const (
 )
 
 type TransactionsRepository interface {
-	Create(transaction *domain.Transaction) (*domain.Transaction, error)
-	UpdateByMsgID(transaction *domain.Transaction) (*domain.Transaction, error)
-	GetAll(userID int64, filters *domain.TransactionFilters) (*[]domain.Transaction, error)
+	Create(t *domain.Transaction) (*domain.Transaction, error)
+	UpdateByMsgID(t *domain.Transaction) (*domain.Transaction, error)
+	GetAll(userID string, filters *domain.TransactionFilters) (*[]domain.Transaction, error)
 	GetByMsgID(msgID int64, userID string) (*domain.Transaction, error)
 }
 
@@ -41,16 +42,20 @@ func NewTransactionsRepository(db *sqlx.DB) TransactionsRepository {
 	}
 }
 func (r *transactionsRepository) Create(t *domain.Transaction) (*domain.Transaction, error) {
-	t.ID = uuid.NewString()
-
 	query, args, err := r.sqlBuilder.CreateSQL(t)
 	if err != nil {
-		return nil, jsend.NewError("failed CreateSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed transactionsRepository.Create.CreateSQL", err, http.StatusInternalServerError)
 	}
 
 	_, err = r.db.Exec(query, args...)
 	if err != nil {
-		return nil, jsend.NewError("failed Exec", err, http.StatusInternalServerError)
+		var pgerr *pq.Error
+		if errors.As(err, &pgerr) {
+			if pgerr.Code == defines.PGCodeDuplicateKey {
+				return nil, jsend.NewError("transaction ID already exists", nil, http.StatusConflict)
+			}
+		}
+		return nil, jsend.NewError("failed transactionsRepository.Create.Exec", err, http.StatusInternalServerError)
 	}
 
 	return t, nil
@@ -76,7 +81,7 @@ func (r *transactionsRepository) UpdateByMsgID(t *domain.Transaction) (*domain.T
 
 	return t, nil
 }
-func (r *transactionsRepository) GetAll(userID int64, filters *domain.TransactionFilters) (*[]domain.Transaction, error) {
+func (r *transactionsRepository) GetAll(userID string, filters *domain.TransactionFilters) (*[]domain.Transaction, error) {
 	query, args, err := r.sqlBuilder.GetAllSQL(userID, filters)
 
 	rows, err := r.db.Queryx(query, args...)
@@ -138,32 +143,33 @@ func (tsql *transactionsSQL) UpdateByMsgIDSQL(t *domain.Transaction) (string, []
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (tsql *transactionsSQL) GetAllSQL(userID int64, filters *domain.TransactionFilters) (string, []interface{}, error) {
+func (tsql *transactionsSQL) GetAllSQL(userID string, filters *domain.TransactionFilters) (string, []interface{}, error) {
 	q := sq.Select("*").
 		From(tableTransactions)
 
-	if len(*filters) > 0 {
-		and := sq.And{sq.Eq{"user_id": userID}}
+	where := sq.And{sq.Eq{"user_id": userID}}
+
+	if filters != nil && len(*filters) > 0 {
 		for k, v := range *filters {
 			if k == defines.QueryFrom || k == defines.QueryTo {
 				tsInt, err := strconv.ParseInt(v, 10, 64)
 				if err == nil {
 					ts := time.Unix(tsInt, 0).Format(time.RFC3339)
 					if k == defines.QueryFrom {
-						and = append(and, sq.GtOrEq{"created_at": ts})
+						where = append(where, sq.GtOrEq{"created_at": ts})
 					} else {
-						and = append(and, sq.LtOrEq{"created_at": ts})
+						where = append(where, sq.LtOrEq{"created_at": ts})
 					}
 				}
 				continue
 			}
 
-			and = append(and, sq.Eq{k: v})
+			where = append(where, sq.Eq{k: v})
 		}
-		q = q.Where(and)
-	} else {
-		q = q.Where(sq.Eq{"user_id": userID})
 	}
+
+	q = q.Where(where)
+
 	q = q.OrderBy("created_at DESC")
 	return q.PlaceholderFormat(sq.Dollar).
 		ToSql()

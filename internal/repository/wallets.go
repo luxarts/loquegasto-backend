@@ -123,12 +123,12 @@ func (r *walletRepository) UpdateByID(wallet *domain.Wallet) (*domain.Wallet, er
 	query, args, err := r.sqlBuilder.UpdateByIDSQL(wallet)
 
 	if err != nil {
-		return nil, jsend.NewError("failed UpdateSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed walletRepository.UpdateByID.UpdateSQL", err, http.StatusInternalServerError)
 	}
 
 	res, err := r.db.Exec(query, args...)
 	if err != nil {
-		return nil, jsend.NewError("failed Exec", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed walletRepository.UpdateByID.Exec", err, http.StatusInternalServerError)
 	}
 
 	if rows, _ := res.RowsAffected(); rows == 0 {
@@ -190,7 +190,9 @@ func (wsql *walletsSQL) GetBySanitizedNameSQL(name string, userID string) (strin
 func (wsql *walletsSQL) UpdateByIDSQL(wallet *domain.Wallet) (string, []interface{}, error) {
 	return sq.Update(tableWallets).
 		Set("name", wallet.Name).
+		Set("sanitized_name", wallet.SanitizedName).
 		Set("balance", wallet.Balance).
+		Set("emoji", wallet.Emoji).
 		Where(sq.Eq{"id": wallet.ID, "user_id": wallet.UserID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

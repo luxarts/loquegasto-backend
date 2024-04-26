@@ -23,11 +23,11 @@ const (
 type CategoriesRepository interface {
 	Create(category *domain.Category) (*domain.Category, error)
 	GetAll(userID int64) (*[]domain.Category, error)
-	GetByID(id int64, userID string) (*domain.Category, error)
+	GetByID(id string, userID string) (*domain.Category, error)
 	GetByName(name string, userID int64) (*domain.Category, error)
 	GetBySanitizedName(name string, userID string) (*domain.Category, error)
 	GetByEmoji(emoji string, userID int64) (*domain.Category, error)
-	DeleteByID(id int64, userID int64) error
+	DeleteByID(id string, userID int64) error
 	UpdateByID(category *domain.Category) (*domain.Category, error)
 }
 
@@ -86,10 +86,10 @@ func (r *categoriesRepository) GetAll(userID int64) (*[]domain.Category, error) 
 
 	return &results, nil
 }
-func (r *categoriesRepository) GetByID(id int64, userID string) (*domain.Category, error) {
+func (r *categoriesRepository) GetByID(id string, userID string) (*domain.Category, error) {
 	query, args, err := r.sqlBuilder.GetByIDSQL(id, userID)
 	if err != nil {
-		return nil, jsend.NewError("failed GetByIDSQL", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed categoriesRepository.GetByID.GetByIDSQL", err, http.StatusInternalServerError)
 	}
 
 	var category domain.Category
@@ -98,7 +98,7 @@ func (r *categoriesRepository) GetByID(id int64, userID string) (*domain.Categor
 		if strings.Contains(err.Error(), "no rows in result set") {
 			return nil, jsend.NewError("category not found", nil, http.StatusNotFound)
 		}
-		return nil, jsend.NewError("failed StructScan", err, http.StatusInternalServerError)
+		return nil, jsend.NewError("failed categoriesRepository.GetByID.StructScan", err, http.StatusInternalServerError)
 	}
 
 	return &category, nil
@@ -155,7 +155,7 @@ func (r *categoriesRepository) GetByEmoji(emoji string, userID int64) (*domain.C
 
 	return &category, nil
 }
-func (r *categoriesRepository) DeleteByID(id int64, userID int64) error {
+func (r *categoriesRepository) DeleteByID(id string, userID int64) error {
 	query, args, err := r.sqlBuilder.DeleteByIDSQL(id, userID)
 	if err != nil {
 		return jsend.NewError("failed DeleteByIDSQL", err, http.StatusInternalServerError)
@@ -207,7 +207,7 @@ func (csql *categoriesSQL) GetAllSQL(userID int64) (string, []interface{}, error
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (csql *categoriesSQL) GetByIDSQL(id int64, userID string) (string, []interface{}, error) {
+func (csql *categoriesSQL) GetByIDSQL(id string, userID string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableCategories).
 		Where(sq.And{
@@ -244,7 +244,7 @@ func (csql *categoriesSQL) GetByEmojiSQL(emoji string, userID int64) (string, []
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (csql *categoriesSQL) DeleteByIDSQL(id int64, userID int64) (string, []interface{}, error) {
+func (csql *categoriesSQL) DeleteByIDSQL(id string, userID int64) (string, []interface{}, error) {
 	return sq.Delete(tableCategories).
 		Where(sq.And{
 			sq.Eq{"id": id},

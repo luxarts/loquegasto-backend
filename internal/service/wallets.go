@@ -13,9 +13,9 @@ import (
 
 type WalletsService interface {
 	Create(req *domain.WalletCreateRequest, userID string) (*domain.WalletCreateResponse, error)
-	GetByName(userID string, name string) (*domain.WalletCreateResponse, error)
-	GetByID(userID string, id string) (*domain.WalletCreateResponse, error)
-	GetAll(userID string) (*[]domain.WalletCreateResponse, error)
+	GetByName(userID string, name string) (*domain.WalletGetResponse, error)
+	GetByID(userID string, id string) (*domain.WalletGetResponse, error)
+	GetAll(userID string) (*[]domain.WalletGetResponse, error)
 	UpdateByID(walletDTO *domain.WalletCreateRequest) (*domain.WalletCreateResponse, error)
 	DeleteByID(id string, userID string) error
 }
@@ -54,37 +54,34 @@ func (s *walletsService) Create(req *domain.WalletCreateRequest, userID string) 
 
 	return wallet.ToWalletCreateResponse(), nil
 }
-func (s *walletsService) GetByName(userID string, name string) (*domain.WalletCreateResponse, error) {
+func (s *walletsService) GetByName(userID string, name string) (*domain.WalletGetResponse, error) {
 	wallet, err := s.repo.GetBySanitizedName(sanitizer.Sanitize(name), userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return wallet.ToWalletCreateResponse(), nil
+	return wallet.ToWalletGetResponse(), nil
 }
-func (s *walletsService) GetByID(userID string, id string) (*domain.WalletCreateResponse, error) {
+func (s *walletsService) GetByID(userID string, id string) (*domain.WalletGetResponse, error) {
 	wallet, err := s.repo.GetByID(id, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return wallet.ToWalletCreateResponse(), nil
+	return wallet.ToWalletGetResponse(), nil
 }
-func (s *walletsService) GetAll(userID string) (*[]domain.WalletCreateResponse, error) {
-	var err error
-	var wallets *[]domain.Wallet
-
-	wallets, err = s.repo.GetAllByUserID(userID)
+func (s *walletsService) GetAll(userID string) (*[]domain.WalletGetResponse, error) {
+	wallets, err := s.repo.GetAllByUserID(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	var walletDTOs = make([]domain.WalletCreateResponse, len(*wallets))
-	for _, wallet := range *wallets {
-		walletDTOs = append(walletDTOs, *wallet.ToWalletCreateResponse())
+	var response = make([]domain.WalletGetResponse, len(*wallets))
+	for i, wallet := range *wallets {
+		response[i] = *wallet.ToWalletGetResponse()
 	}
 
-	return &walletDTOs, nil
+	return &response, nil
 }
 func (s *walletsService) UpdateByID(walletDTO *domain.WalletCreateRequest) (*domain.WalletCreateResponse, error) {
 	wallet := walletDTO.ToWallet()

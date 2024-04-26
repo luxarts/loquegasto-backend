@@ -16,8 +16,8 @@ type CategoriesService interface {
 	GetAll(userID int64) (*[]domain.CategoryCreateResponse, error)
 	GetByName(name string, userID int64) (*domain.CategoryCreateResponse, error)
 	GetByEmoji(emoji string, userID int64) (*domain.CategoryCreateResponse, error)
-	GetByID(ID int64, userID string) (*domain.CategoryCreateResponse, error)
-	DeleteByID(id int64, userID int64) error
+	GetByID(ID string, userID string) (*domain.CategoryCreateResponse, error)
+	DeleteByID(id string, userID int64) error
 	UpdateByID(categoryDTO *domain.CategoryCreateRequest) (*domain.CategoryCreateResponse, error)
 }
 type categoriesService struct {
@@ -86,7 +86,7 @@ func (s *categoriesService) GetByEmoji(emoji string, userID int64) (*domain.Cate
 
 	return category.ToCategoryCreateResponse(), nil
 }
-func (s *categoriesService) DeleteByID(id int64, userID int64) error {
+func (s *categoriesService) DeleteByID(id string, userID int64) error {
 	return s.repo.DeleteByID(id, userID)
 }
 func (s *categoriesService) UpdateByID(categoryDTO *domain.CategoryCreateRequest) (*domain.CategoryCreateResponse, error) {
@@ -101,7 +101,7 @@ func (s *categoriesService) UpdateByID(categoryDTO *domain.CategoryCreateRequest
 
 	return category.ToCategoryCreateResponse(), nil
 }
-func (s *categoriesService) GetByID(ID int64, userID string) (*domain.CategoryCreateResponse, error) {
+func (s *categoriesService) GetByID(ID string, userID string) (*domain.CategoryCreateResponse, error) {
 	category, err := s.repo.GetByID(ID, userID)
 	if err != nil {
 		return nil, err
