@@ -13,10 +13,9 @@ import (
 
 type WalletsService interface {
 	Create(req *domain.WalletCreateRequest, userID string) (*domain.WalletCreateResponse, error)
-	GetByName(userID string, name string) (*domain.WalletGetResponse, error)
-	GetByID(userID string, id string) (*domain.WalletGetResponse, error)
+	GetByID(id string, userID string) (*domain.WalletGetResponse, error)
 	GetAll(userID string) (*[]domain.WalletGetResponse, error)
-	UpdateByID(walletDTO *domain.WalletCreateRequest) (*domain.WalletCreateResponse, error)
+	UpdateByID(req *domain.WalletUpdateRequest, id string, userID string) (*domain.WalletUpdateResponse, error)
 	DeleteByID(id string, userID string) error
 }
 type walletsService struct {
@@ -38,12 +37,11 @@ func (s *walletsService) Create(req *domain.WalletCreateRequest, userID string) 
 		return nil, err
 	}
 	if w != nil {
-		return nil, jsend.NewError("wallet name already exists", nil, http.StatusBadRequest)
+		return nil, jsend.NewError("wallet name already used", nil, http.StatusBadRequest)
 	}
 
 	wallet := req.ToWallet()
 	wallet.ID = uuid.NewString()
-	wallet.SanitizedName = sanitizedName
 	wallet.UserID = userID
 	wallet.CreatedAt = time.Now()
 
@@ -54,7 +52,7 @@ func (s *walletsService) Create(req *domain.WalletCreateRequest, userID string) 
 
 	return wallet.ToWalletCreateResponse(), nil
 }
-func (s *walletsService) GetByName(userID string, name string) (*domain.WalletGetResponse, error) {
+func (s *walletsService) GetByName(name string, userID string) (*domain.WalletGetResponse, error) {
 	wallet, err := s.repo.GetBySanitizedName(sanitizer.Sanitize(name), userID)
 	if err != nil {
 		return nil, err
@@ -62,7 +60,7 @@ func (s *walletsService) GetByName(userID string, name string) (*domain.WalletGe
 
 	return wallet.ToWalletGetResponse(), nil
 }
-func (s *walletsService) GetByID(userID string, id string) (*domain.WalletGetResponse, error) {
+func (s *walletsService) GetByID(id string, userID string) (*domain.WalletGetResponse, error) {
 	wallet, err := s.repo.GetByID(id, userID)
 	if err != nil {
 		return nil, err
@@ -83,17 +81,27 @@ func (s *walletsService) GetAll(userID string) (*[]domain.WalletGetResponse, err
 
 	return &response, nil
 }
-func (s *walletsService) UpdateByID(walletDTO *domain.WalletCreateRequest) (*domain.WalletCreateResponse, error) {
-	wallet := walletDTO.ToWallet()
+func (s *walletsService) UpdateByID(req *domain.WalletUpdateRequest, id string, userID string) (*domain.WalletUpdateResponse, error) {
+	sanitizedName := sanitizer.Sanitize(req.Name)
 
-	wallet.SanitizedName = sanitizer.Sanitize(wallet.Name)
+	// Check if the name already exists for the given user
+	w, err := s.repo.GetBySanitizedName(sanitizedName, userID)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && err != nil && *jsendErr.Code != http.StatusNotFound {
+		return nil, err
+	}
+	if w != nil {
+		return nil, jsend.NewError("wallet name already used", nil, http.StatusBadRequest)
+	}
 
-	wallet, err := s.repo.UpdateByID(wallet)
+	wallet := req.ToWallet()
+
+	wallet, err = s.repo.UpdateByID(wallet, id, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return wallet.ToWalletCreateResponse(), nil
+	return wallet.ToWalletUpdateResponse(), nil
 }
 func (s *walletsService) DeleteByID(id string, userID string) error {
 	return s.repo.DeleteByID(id, userID)

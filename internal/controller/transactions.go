@@ -107,8 +107,9 @@ func (c *transactionsController) GetAll(ctx *gin.Context) {
 
 	response, err := c.srv.GetAll(&filters, userID)
 
-	if err, isError := err.(*jsend.Body); isError && err != nil {
-		ctx.JSON(*err.Code, err)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && jsendErr != nil {
+		ctx.JSON(*jsendErr.Code, err)
 		return
 	}
 

@@ -24,7 +24,7 @@ type WalletRepository interface {
 	GetAllByUserID(userID string) (*[]domain.Wallet, error)
 	GetBySanitizedName(name string, userID string) (*domain.Wallet, error)
 	GetByID(id string, userID string) (*domain.Wallet, error)
-	UpdateByID(wallet *domain.Wallet) (*domain.Wallet, error)
+	UpdateByID(wallet *domain.Wallet, id string, userID string) (*domain.Wallet, error)
 	DeleteByID(id string, userID string) error
 }
 type walletRepository struct {
@@ -119,8 +119,8 @@ func (r *walletRepository) GetByID(id string, userID string) (*domain.Wallet, er
 
 	return &wallet, nil
 }
-func (r *walletRepository) UpdateByID(wallet *domain.Wallet) (*domain.Wallet, error) {
-	query, args, err := r.sqlBuilder.UpdateByIDSQL(wallet)
+func (r *walletRepository) UpdateByID(wallet *domain.Wallet, id string, userID string) (*domain.Wallet, error) {
+	query, args, err := r.sqlBuilder.UpdateByIDSQL(wallet, id, userID)
 
 	if err != nil {
 		return nil, jsend.NewError("failed walletRepository.UpdateByID.UpdateSQL", err, http.StatusInternalServerError)
@@ -135,6 +135,7 @@ func (r *walletRepository) UpdateByID(wallet *domain.Wallet) (*domain.Wallet, er
 		return nil, jsend.NewError("wallet not found", nil, http.StatusNotFound)
 	}
 
+	wallet.ID = id
 	return wallet, nil
 }
 func (r *walletRepository) DeleteByID(id string, userID string) error {
@@ -187,13 +188,13 @@ func (wsql *walletsSQL) GetBySanitizedNameSQL(name string, userID string) (strin
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
-func (wsql *walletsSQL) UpdateByIDSQL(wallet *domain.Wallet) (string, []interface{}, error) {
+func (wsql *walletsSQL) UpdateByIDSQL(wallet *domain.Wallet, id string, userID string) (string, []interface{}, error) {
 	return sq.Update(tableWallets).
 		Set("name", wallet.Name).
 		Set("sanitized_name", wallet.SanitizedName).
 		Set("balance", wallet.Balance).
 		Set("emoji", wallet.Emoji).
-		Where(sq.Eq{"id": wallet.ID, "user_id": wallet.UserID}).
+		Where(sq.Eq{"id": id, "user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }

@@ -50,7 +50,7 @@ func (s *transactionsService) Create(req *domain.TransactionCreateRequest, userI
 
 	// Update balance
 	wallet.Balance += transaction.Amount
-	wallet, err = s.walletRepo.UpdateByID(wallet)
+	wallet, err = s.walletRepo.UpdateByID(wallet, wallet.ID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -94,12 +94,12 @@ func (s *transactionsService) UpdateByMsgID(transactionDTO *domain.TransactionCr
 	// Update balance with new transaction's amount
 	walletDest.Balance += transaction.Amount
 
-	_, err = s.walletRepo.UpdateByID(walletSrc)
+	_, err = s.walletRepo.UpdateByID(walletSrc, walletSrc.ID, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	walletDest, err = s.walletRepo.UpdateByID(walletDest)
+	walletDest, err = s.walletRepo.UpdateByID(walletDest, walletDest.ID, userID)
 	if err != nil {
 		return nil, err
 	}
