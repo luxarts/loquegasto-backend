@@ -9,7 +9,8 @@ create table core.categories
     name           varchar(64) not null,
     sanitized_name varchar(64) not null,
     emoji          varchar(8),
-    created_at     timestamp   not null
+    created_at     timestamp   not null,
+    deleted boolean
 );
 
 alter table core.categories

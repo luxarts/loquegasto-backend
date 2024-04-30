@@ -10,7 +10,8 @@ create table core.wallets
     sanitized_name varchar(64) not null,
     balance        bigint      not null,
     emoji          varchar(8),
-    created_at     timestamp   not null
+    created_at     timestamp   not null,
+    deleted bool
 );
 
 alter table core.wallets

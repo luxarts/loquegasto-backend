@@ -2,23 +2,24 @@ package service
 
 import (
 	"errors"
-	"github.com/google/uuid"
-	"github.com/luxarts/jsend-go"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/utils/sanitizer"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/luxarts/jsend-go"
 )
 
 type CategoriesService interface {
 	Create(req *domain.CategoryCreateRequest, userID string) (*domain.CategoryCreateResponse, error)
-	GetAll(userID int64) (*[]domain.CategoryCreateResponse, error)
-	GetByName(name string, userID int64) (*domain.CategoryCreateResponse, error)
-	GetByEmoji(emoji string, userID int64) (*domain.CategoryCreateResponse, error)
+	GetAll(userID string) (*[]domain.CategoryCreateResponse, error)
+	GetByName(name string, userID string) (*domain.CategoryCreateResponse, error)
+	GetByEmoji(emoji string, userID string) (*domain.CategoryCreateResponse, error)
 	GetByID(ID string, userID string) (*domain.CategoryCreateResponse, error)
-	DeleteByID(id string, userID int64) error
-	UpdateByID(categoryDTO *domain.CategoryCreateRequest) (*domain.CategoryCreateResponse, error)
+	DeleteByID(id string, userID string) error
+	UpdateByID(req *domain.CategoryUpdateRequest, id string, userID string) (*domain.CategoryUpdateResponse, error)
 }
 type categoriesService struct {
 	repo repository.CategoriesRepository
@@ -55,7 +56,7 @@ func (s *categoriesService) Create(req *domain.CategoryCreateRequest, userID str
 
 	return category.ToCategoryCreateResponse(), nil
 }
-func (s *categoriesService) GetAll(userID int64) (*[]domain.CategoryCreateResponse, error) {
+func (s *categoriesService) GetAll(userID string) (*[]domain.CategoryCreateResponse, error) {
 	categories, err := s.repo.GetAll(userID)
 	if err != nil {
 		return nil, err
@@ -68,7 +69,7 @@ func (s *categoriesService) GetAll(userID int64) (*[]domain.CategoryCreateRespon
 
 	return &categoryDTOs, nil
 }
-func (s *categoriesService) GetByName(name string, userID int64) (*domain.CategoryCreateResponse, error) {
+func (s *categoriesService) GetByName(name string, userID string) (*domain.CategoryCreateResponse, error) {
 	name = sanitizer.Sanitize(name)
 
 	category, err := s.repo.GetByName(name, userID)
@@ -78,7 +79,7 @@ func (s *categoriesService) GetByName(name string, userID int64) (*domain.Catego
 
 	return category.ToCategoryCreateResponse(), nil
 }
-func (s *categoriesService) GetByEmoji(emoji string, userID int64) (*domain.CategoryCreateResponse, error) {
+func (s *categoriesService) GetByEmoji(emoji string, userID string) (*domain.CategoryCreateResponse, error) {
 	category, err := s.repo.GetByEmoji(emoji, userID)
 	if err != nil {
 		return nil, err
@@ -86,20 +87,30 @@ func (s *categoriesService) GetByEmoji(emoji string, userID int64) (*domain.Cate
 
 	return category.ToCategoryCreateResponse(), nil
 }
-func (s *categoriesService) DeleteByID(id string, userID int64) error {
+func (s *categoriesService) DeleteByID(id string, userID string) error {
 	return s.repo.DeleteByID(id, userID)
 }
-func (s *categoriesService) UpdateByID(categoryDTO *domain.CategoryCreateRequest) (*domain.CategoryCreateResponse, error) {
-	category := categoryDTO.ToCategory()
+func (s *categoriesService) UpdateByID(req *domain.CategoryUpdateRequest, id string, userID string) (*domain.CategoryUpdateResponse, error) {
+	sanitizedName := sanitizer.Sanitize(req.Name)
 
-	category.SanitizedName = sanitizer.Sanitize(category.Name)
+	// Check if the name already exists for the given user
+	c, err := s.repo.GetBySanitizedName(sanitizedName, userID)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && err != nil && *jsendErr.Code != http.StatusNotFound {
+		return nil, err
+	}
+	if c != nil {
+		return nil, jsend.NewError("category name already used", nil, http.StatusBadRequest)
+	}
 
-	category, err := s.repo.UpdateByID(category)
+	category := req.ToCategory()
+
+	category, err = s.repo.UpdateByID(category, id, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return category.ToCategoryCreateResponse(), nil
+	return category.ToCategoryUpdateResponse(), nil
 }
 func (s *categoriesService) GetByID(ID string, userID string) (*domain.CategoryCreateResponse, error) {
 	category, err := s.repo.GetByID(ID, userID)

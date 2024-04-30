@@ -9,12 +9,8 @@ create table core.transactions
     msg_id      bigint,
     amount      bigint      not null,
     description varchar(64) not null,
-    wallet_id   uuid     not null
-        constraint transactions_wallet_id_fk
-            references core.wallets,
-    category_id uuid not null
-        constraint transactions_category_id_fk
-            references core.categories,
+    wallet_id   uuid     not null,
+    category_id uuid not null,
     created_at  timestamp   not null
 );
 

@@ -7,7 +7,6 @@ import (
 	"loquegasto-backend/internal/middleware"
 	"loquegasto-backend/internal/service"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/luxarts/jsend-go"
@@ -56,7 +55,7 @@ func (c *categoriesController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
 }
 func (c *categoriesController) GetAll(ctx *gin.Context) {
-	userID := ctx.GetInt64(defines.ParamUserID)
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
 	var response interface{}
 	var err error
@@ -79,7 +78,7 @@ func (c *categoriesController) GetAll(ctx *gin.Context) {
 func (c *categoriesController) DeleteByID(ctx *gin.Context) {
 	idStr := ctx.Param(defines.ParamID)
 
-	userID := ctx.GetInt64(defines.ParamUserID)
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
 	err := c.srv.DeleteByID(idStr, userID)
 
@@ -91,47 +90,44 @@ func (c *categoriesController) DeleteByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, jsend.NewSuccess(nil))
 }
 func (c *categoriesController) UpdateByID(ctx *gin.Context) {
-	var body domain.CategoryCreateRequest
+	var body domain.CategoryUpdateRequest
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
-	idStr := ctx.Param(defines.ParamID)
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
-		return
-	}
+	id := ctx.Param(defines.ParamID)
 
 	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
+	userID := ctx.GetString(middleware.CtxKeyUserID)
+
 	// Check if name already used
-	category, err := c.srv.GetByName(body.Name, id)
+	category, err := c.srv.GetByName(body.Name, userID)
 	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
 		ctx.JSON(*err.Code, err)
 		return
 	}
-	if category != nil && category.ID != idStr {
+	if category != nil && category.ID != id {
 		ctx.JSON(http.StatusConflict, defines.ErrNameAlreadyExists)
 		return
 	}
 
 	// Check if emoji already used
-	category, err = c.srv.GetByEmoji(body.Emoji, id)
+	category, err = c.srv.GetByEmoji(body.Emoji, userID)
 	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
 		ctx.JSON(*err.Code, err)
 		return
 	}
-	if category != nil && category.ID != idStr {
+	if category != nil && category.ID != id {
 		ctx.JSON(http.StatusConflict, defines.ErrEmojiAlreadyExists)
 		return
 	}
 
-	response, err := c.srv.UpdateByID(&body)
+	response, err := c.srv.UpdateByID(&body, id, userID)
 
 	if err, isError := err.(*jsend.Body); isError && err != nil {
 		ctx.JSON(*err.Code, err)

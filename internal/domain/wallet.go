@@ -13,6 +13,7 @@ type Wallet struct {
 	Emoji         string    `db:"emoji"`
 	Balance       int64     `db:"balance"`
 	CreatedAt     time.Time `db:"created_at"`
+	Deleted       *bool     `db:"deleted"`
 }
 
 type WalletCreateRequest struct {

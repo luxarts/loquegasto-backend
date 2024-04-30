@@ -2,12 +2,13 @@ package repository
 
 import (
 	"errors"
-	"github.com/lib/pq"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/utils/dbstruct"
 	"net/http"
 	"strings"
+
+	"github.com/lib/pq"
 
 	"github.com/luxarts/jsend-go"
 
@@ -170,21 +171,21 @@ func (wsql *walletsSQL) CreateSQL(wallet *domain.Wallet) (string, []interface{},
 func (wsql *walletsSQL) GetAllByUserIDSQL(userID string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
-		Where(sq.Eq{"user_id": userID}).
+		Where(sq.Eq{"user_id": userID, "deleted": nil}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
 func (wsql *walletsSQL) GetByIDSQL(id string, userID string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
-		Where(sq.Eq{"id": id, "user_id": userID}).
+		Where(sq.Eq{"id": id, "user_id": userID, "deleted": nil}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
 func (wsql *walletsSQL) GetBySanitizedNameSQL(name string, userID string) (string, []interface{}, error) {
 	return sq.Select("*").
 		From(tableWallets).
-		Where(sq.Eq{"sanitized_name": name, "user_id": userID}).
+		Where(sq.Eq{"sanitized_name": name, "user_id": userID, "deleted": nil}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
@@ -194,12 +195,13 @@ func (wsql *walletsSQL) UpdateByIDSQL(wallet *domain.Wallet, id string, userID s
 		Set("sanitized_name", wallet.SanitizedName).
 		Set("balance", wallet.Balance).
 		Set("emoji", wallet.Emoji).
-		Where(sq.Eq{"id": id, "user_id": userID}).
+		Where(sq.Eq{"id": id, "user_id": userID, "deleted": nil}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 }
 func (wsql *walletsSQL) DeleteByIDSQL(id string, userID string) (string, []interface{}, error) {
-	return sq.Delete(tableWallets).
+	return sq.Update(tableWallets).
+		Set("deleted", true).
 		Where(sq.Eq{"id": id, "user_id": userID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
