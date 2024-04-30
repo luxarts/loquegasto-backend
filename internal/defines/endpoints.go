@@ -9,10 +9,8 @@ const (
 	EndpointTransactionsGetAll        = "/transactions"
 
 	// Users
-	EndpointUsersCreate = "/users"
-	EndpointUsersGet    = "/user"
-	EndpointUsersUpdate = "/user"
-	EndpointUsersDelete = "/user"
+	EndpointUsersCreate          = "/users"
+	EndpointUserAuthWithTelegram = "/auth/telegram"
 
 	// Wallets
 	EndpointWalletsCreate     = "/wallets"

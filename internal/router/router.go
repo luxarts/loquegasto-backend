@@ -2,17 +2,14 @@ package router
 
 import (
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"loquegasto-backend/internal/controller"
 	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/middleware"
 	"loquegasto-backend/internal/repository"
 	"loquegasto-backend/internal/service"
-	"loquegasto-backend/internal/utils/jwt"
 	"net/http"
 	"os"
-	"strconv"
-
-	"github.com/jmoiron/sqlx"
 
 	"github.com/gin-gonic/gin"
 	"github.com/luxarts/jsend-go"
@@ -28,12 +25,14 @@ func New() *gin.Engine {
 
 func mapRoutes(r *gin.Engine) {
 	// DB connectors, rest clients, and other stuff init
-	postgresURI := fmt.Sprintf("postgres://%s:%s@%s:%s/postgres?sslmode=disable",
+	postgresURI := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv(defines.EnvPostgresUser),
 		os.Getenv(defines.EnvPostgresPassword),
 		os.Getenv(defines.EnvPostgresHost),
 		os.Getenv(defines.EnvPostgresPort),
+		os.Getenv(defines.EnvPostgresDB),
 	)
+
 	db, err := sqlx.Open("postgres", postgresURI)
 	if err != nil {
 		panic(fmt.Sprintf("Fail to connect to database: %v", err))
@@ -50,23 +49,22 @@ func mapRoutes(r *gin.Engine) {
 	catRepo := repository.NewCategoriesRepository(db)
 
 	// Services init
-	txnSrv := service.NewTransactionsService(txnRepo, walletsRepo, catRepo)
-	usersSrv := service.NewUsersService(usersRepo)
-	walletsSrv := service.NewWalletsService(walletsRepo)
-	catSrv := service.NewCategoriesService(catRepo)
+	txnSvc := service.NewTransactionsService(txnRepo, walletsRepo, catRepo)
+	usersSvc := service.NewUsersService(usersRepo)
+	walletsSvc := service.NewWalletsService(walletsRepo)
+	catSvc := service.NewCategoriesService(catRepo)
 
 	// Controllers init
-	txnCtrl := controller.NewTransactionsController(txnSrv)
-	usersCtrl := controller.NewUsersController(usersSrv)
-	walletsCtrl := controller.NewWalletsController(walletsSrv)
-	catCtrl := controller.NewCategoriesController(catSrv)
+	txnCtrl := controller.NewTransactionsController(txnSvc)
+	usersCtrl := controller.NewUsersController(usersSvc)
+	walletsCtrl := controller.NewWalletsController(walletsSvc)
+	catCtrl := controller.NewCategoriesController(catSvc)
 
 	// Middleware
 	authMw := middleware.NewAuthMiddleware()
+	appAuthMw := middleware.NewAppAuthMiddleware()
 
 	// Endpoints
-	r.GET("/token/:userID", generateToken)
-
 	// Health check endpoint
 	r.GET(defines.EndpointPing, healthCheck)
 
@@ -74,16 +72,17 @@ func mapRoutes(r *gin.Engine) {
 	authorized := r.Group("/")
 	authorized.Use(authMw.Check)
 
+	appAuthorizer := r.Group("/")
+	appAuthorizer.Use(appAuthMw.Check)
+
+	// Users
+	appAuthorizer.POST(defines.EndpointUsersCreate, usersCtrl.Create)
+	appAuthorizer.POST(defines.EndpointUserAuthWithTelegram, usersCtrl.AuthWithTelegram)
+
 	// Transactions
 	authorized.POST(defines.EndpointTransactionsCreate, txnCtrl.Create)
 	authorized.PUT(defines.EndpointTransactionsUpdateByMsgID, txnCtrl.UpdateByMsgID)
 	authorized.GET(defines.EndpointTransactionsGetAll, txnCtrl.GetAll)
-
-	// Users
-	authorized.POST(defines.EndpointUsersCreate, usersCtrl.Create)
-	authorized.GET(defines.EndpointUsersGet, usersCtrl.Get)
-	authorized.PUT(defines.EndpointUsersUpdate, usersCtrl.Update)
-	authorized.DELETE(defines.EndpointUsersDelete, usersCtrl.Delete)
 
 	// Wallets
 	authorized.POST(defines.EndpointWalletsCreate, walletsCtrl.Create)
@@ -102,15 +101,4 @@ func mapRoutes(r *gin.Engine) {
 
 func healthCheck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, jsend.NewSuccess("pong"))
-}
-func generateToken(ctx *gin.Context) {
-	userID := ctx.Param("userID")
-	userIDInt, err := strconv.ParseInt(userID, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
-		return
-	}
-	token := jwt.GenerateToken(nil, &jwt.Payload{Subject: userIDInt})
-
-	ctx.String(http.StatusOK, token)
 }

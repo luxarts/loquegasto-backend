@@ -1,14 +1,14 @@
 package controller
 
 import (
-	"loquegasto-backend/internal/defines"
-	"loquegasto-backend/internal/domain"
-	"loquegasto-backend/internal/service"
-	"net/http"
-	"strconv"
-
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/luxarts/jsend-go"
+	"loquegasto-backend/internal/defines"
+	"loquegasto-backend/internal/domain"
+	"loquegasto-backend/internal/middleware"
+	"loquegasto-backend/internal/service"
+	"net/http"
 )
 
 type WalletsController interface {
@@ -28,131 +28,92 @@ func NewWalletsController(srv service.WalletsService) WalletsController {
 	}
 }
 func (c *walletsController) Create(ctx *gin.Context) {
-	var body domain.WalletDTO
+	var body domain.WalletCreateRequest
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
-	body.UserID = ctx.GetInt64(defines.ParamUserID)
-
 	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
-	// Check if name already used
-	wallet, err := c.srv.GetByName(body.UserID, body.Name)
-	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
-		ctx.JSON(*err.Code, err)
-		return
-	}
-	if wallet != nil {
-		ctx.JSON(http.StatusConflict, defines.ErrNameAlreadyExists)
-		return
-	}
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
-	response, err := c.srv.Create(&body)
+	response, err := c.srv.Create(&body, userID)
 
-	if err, isError := err.(*jsend.Body); isError && err != nil {
-		ctx.JSON(*err.Code, err)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && jsendErr != nil {
+		ctx.JSON(*jsendErr.Code, jsendErr)
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, jsend.NewSuccess(response))
 }
 func (c *walletsController) GetByID(ctx *gin.Context) {
-	userID := ctx.GetInt64(defines.ParamUserID)
-	idStr := ctx.Param(defines.ParamID)
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	userID := ctx.GetString(middleware.CtxKeyUserID)
+	id := ctx.Param(defines.ParamID)
 
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
-		return
-	}
-
-	response, err := c.srv.GetByID(userID, id)
-	if err, isError := err.(*jsend.Body); isError && err != nil {
-		ctx.JSON(*err.Code, err)
+	response, err := c.srv.GetByID(id, userID)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && jsendErr != nil {
+		ctx.JSON(*jsendErr.Code, jsendErr)
 		return
 	}
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
 func (c *walletsController) GetAll(ctx *gin.Context) {
-	userID := ctx.GetInt64(defines.ParamUserID)
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
-	var response interface{}
-	var err error
+	response, err := c.srv.GetAll(userID)
 
-	if name, exists := ctx.GetQuery(defines.ParamName); exists {
-		response, err = c.srv.GetByName(userID, name)
-	} else {
-		response, err = c.srv.GetAll(userID)
-	}
-
-	if err, isError := err.(*jsend.Body); isError && err != nil {
-		ctx.JSON(*err.Code, err)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && jsendErr != nil {
+		ctx.JSON(*jsendErr.Code, jsendErr)
 		return
 	}
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
 func (c *walletsController) UpdateByID(ctx *gin.Context) {
-	var body domain.WalletDTO
+	var body domain.WalletUpdateRequest
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
-	idStr := ctx.Param(defines.ParamID)
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
-		return
-	}
-	body.ID = id
-	body.UserID = ctx.GetInt64(defines.ParamUserID)
 
 	if !body.IsValid() {
 		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidBody)
 		return
 	}
 
-	// Check if name already used
-	wallet, err := c.srv.GetByName(body.UserID, body.Name)
-	if err, isError := err.(*jsend.Body); isError && err != nil && *err.Code != http.StatusNotFound {
-		ctx.JSON(*err.Code, err)
-		return
-	}
-	if wallet != nil {
-		ctx.JSON(http.StatusConflict, defines.ErrNameAlreadyExists)
-		return
-	}
+	id := ctx.Param(defines.ParamID)
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
-	response, err := c.srv.UpdateByID(&body)
+	response, err := c.srv.UpdateByID(&body, id, userID)
 
-	if err, isError := err.(*jsend.Body); isError && err != nil {
-		ctx.JSON(*err.Code, err)
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && jsendErr != nil {
+		ctx.JSON(*jsendErr.Code, jsendErr)
 		return
 	}
 
 	ctx.JSON(http.StatusOK, jsend.NewSuccess(response))
 }
 func (c *walletsController) DeleteByID(ctx *gin.Context) {
-	idStr := ctx.Param(defines.ParamID)
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, defines.ErrInvalidID)
-		return
-	}
-	userID := ctx.GetInt64(defines.ParamUserID)
+	id := ctx.Param(defines.ParamID)
 
-	err = c.srv.DeleteByID(id, userID)
+	userID := ctx.GetString(middleware.CtxKeyUserID)
 
-	if err, isError := err.(*jsend.Body); isError && err != nil {
-		ctx.JSON(*err.Code, err)
+	err := c.srv.DeleteByID(id, userID)
+
+	var jsendErr *jsend.Body
+	if errors.As(err, &jsendErr) && jsendErr != nil {
+		ctx.JSON(*jsendErr.Code, jsendErr)
 		return
 	}
 

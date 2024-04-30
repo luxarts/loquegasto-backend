@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"loquegasto-backend/internal/defines"
 	"loquegasto-backend/internal/utils/jwt"
 	"net/http"
 	"strings"
@@ -9,6 +8,10 @@ import (
 	"github.com/luxarts/jsend-go"
 
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	CtxKeyUserID = "userID"
 )
 
 type AuthMiddleware interface {
@@ -57,5 +60,5 @@ func (a *authMiddleware) Check(c *gin.Context) {
 		return
 	}
 
-	c.Set(defines.ParamUserID, userID)
+	c.Set(CtxKeyUserID, userID)
 }

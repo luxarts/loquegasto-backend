@@ -1,15 +1,16 @@
 package service
 
 import (
+	"github.com/google/uuid"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/repository"
+	"loquegasto-backend/internal/utils/jwt"
+	"time"
 )
 
 type UsersService interface {
-	Create(userDTO *domain.UserDTO) (*domain.UserDTO, error)
-	GetByID(id int64) (*domain.UserDTO, error)
-	Update(userDTO *domain.UserDTO) (*domain.UserDTO, error)
-	Delete(id int64) error
+	Create(req *domain.UserCreateRequest) (*domain.UserCreateResponse, error)
+	AuthWithTelegram(req *domain.UserAuthWithTelegramRequest) (*domain.UserAuthWithTelegramResponse, error)
 }
 type usersService struct {
 	repo repository.UsersRepository
@@ -20,33 +21,28 @@ func NewUsersService(repo repository.UsersRepository) UsersService {
 		repo: repo,
 	}
 }
-func (s *usersService) Create(userDTO *domain.UserDTO) (*domain.UserDTO, error) {
-	user := userDTO.ToUser()
+func (s *usersService) Create(req *domain.UserCreateRequest) (*domain.UserCreateResponse, error) {
+	user := req.ToUser()
+
+	user.ID = uuid.NewString()
+	user.CreatedAt = time.Now()
 
 	user, err := s.repo.Create(user)
 	if err != nil {
 		return nil, err
 	}
 
-	return user.ToDTO(), nil
+	return user.ToResponse(), nil
 }
-func (s *usersService) GetByID(id int64) (*domain.UserDTO, error) {
-	user, err := s.repo.GetByID(id)
-	if err != nil {
-		return nil, err
-	}
-	return user.ToDTO(), nil
-}
-func (s *usersService) Update(userDTO *domain.UserDTO) (*domain.UserDTO, error) {
-	user := userDTO.ToUser()
-
-	user, err := s.repo.Update(user)
+func (s *usersService) AuthWithTelegram(req *domain.UserAuthWithTelegramRequest) (*domain.UserAuthWithTelegramResponse, error) {
+	u, err := s.repo.GetByChatID(req.ChatID)
 	if err != nil {
 		return nil, err
 	}
 
-	return user.ToDTO(), nil
-}
-func (s *usersService) Delete(id int64) error {
-	return s.repo.Delete(id)
+	token := jwt.GenerateToken(nil, &jwt.Payload{Subject: u.ID})
+
+	return &domain.UserAuthWithTelegramResponse{
+		AccessToken: token,
+	}, nil
 }

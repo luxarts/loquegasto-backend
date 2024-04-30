@@ -3,42 +3,49 @@ package domain
 import "time"
 
 type User struct {
-	ID             int64     `db:"id"`
+	ID             string    `db:"id"`
 	CreatedAt      time.Time `db:"created_at"`
-	UpdatedAt      time.Time `db:"updated_at"`
-	ChatID         int       `db:"chat_id"`
+	ChatID         int64     `db:"chat_id"`
 	TimezoneOffset int       `db:"timezone_offset"`
 }
-type UserDTO struct {
-	ID             int64      `json:"id"`
-	CreatedAt      *time.Time `json:"created_at"`
-	UpdatedAt      *time.Time `json:"updated_at"`
-	ChatID         int        `json:"chat_id"`
-	TimezoneOffset int        `json:"timezone_offset"`
+type UserCreateRequest struct {
+	ChatID         int64 `json:"chat_id"`
+	TimezoneOffset int   `json:"timezone_offset"`
+}
+type UserCreateResponse struct {
+	ID             string    `json:"user_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	ChatID         int64     `json:"chat_id"`
+	TimezoneOffset int       `json:"timezone_offset"`
 }
 
-func (u *User) ToDTO() *UserDTO {
-	return &UserDTO{
+func (u *User) ToResponse() *UserCreateResponse {
+	return &UserCreateResponse{
 		ID:             u.ID,
-		CreatedAt:      &u.CreatedAt,
-		UpdatedAt:      &u.UpdatedAt,
+		CreatedAt:      u.CreatedAt,
 		ChatID:         u.ChatID,
 		TimezoneOffset: u.TimezoneOffset,
 	}
 }
-func (dto *UserDTO) ToUser() *User {
+func (body *UserCreateRequest) ToUser() *User {
 	return &User{
-		ID:             dto.ID,
-		CreatedAt:      *dto.CreatedAt,
-		UpdatedAt:      *dto.UpdatedAt,
-		ChatID:         dto.ChatID,
-		TimezoneOffset: dto.TimezoneOffset,
+		ChatID:         body.ChatID,
+		TimezoneOffset: body.TimezoneOffset,
 	}
 }
 
-func (dto *UserDTO) IsValid() bool {
-	return dto.ID != 0 &&
-		dto.ChatID != 0 &&
-		dto.CreatedAt != nil &&
-		dto.UpdatedAt != nil
+func (body *UserCreateRequest) IsValid() bool {
+	return body.ChatID != 0
+}
+
+type UserAuthWithTelegramRequest struct {
+	ChatID int64 `json:"chat_id"`
+}
+
+func (u *UserAuthWithTelegramRequest) IsValid() bool {
+	return u.ChatID != 0
+}
+
+type UserAuthWithTelegramResponse struct {
+	AccessToken string `json:"access_token"`
 }

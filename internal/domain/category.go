@@ -1,41 +1,81 @@
 package domain
 
+import (
+	"loquegasto-backend/internal/utils/sanitizer"
+	"time"
+)
+
 type Category struct {
-	ID            *int64 `db:"id"`
-	UserID        int64  `db:"user_id"`
-	Name          string `db:"name"`
-	SanitizedName string `db:"sanitized_name"`
-	Emoji         string `db:"emoji"`
+	ID            string    `db:"id"`
+	UserID        string    `db:"user_id"`
+	Name          string    `db:"name"`
+	SanitizedName string    `db:"sanitized_name"`
+	Emoji         string    `db:"emoji"`
+	CreatedAt     time.Time `db:"created_at"`
+	Deleted       *bool     `db:"deleted"`
 }
 
-func (c *Category) ToDTO() *CategoryDTO {
-	return &CategoryDTO{
-		ID:            *c.ID,
-		UserID:        c.UserID,
+type CategoryCreateRequest struct {
+	Name  string `json:"name"`
+	Emoji string `json:"emoji"`
+}
+type CategoryCreateResponse struct {
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	SanitizedName string    `json:"sanitized_name"`
+	Emoji         string    `json:"emoji"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+func (c *Category) ToCategoryCreateResponse() *CategoryCreateResponse {
+	return &CategoryCreateResponse{
+		ID:            c.ID,
 		Name:          c.Name,
 		SanitizedName: c.SanitizedName,
 		Emoji:         c.Emoji,
+		CreatedAt:     c.CreatedAt,
 	}
 }
 
-type CategoryDTO struct {
-	ID            int64  `json:"id"`
-	UserID        int64  `json:"user_id"`
-	Name          string `json:"name"`
-	SanitizedName string `json:"sanitized_name"`
-	Emoji         string `json:"emoji"`
+func (req *CategoryCreateRequest) IsValid() bool {
+	return req.Name != ""
 }
 
-func (dto *CategoryDTO) IsValid() bool {
-	return dto.Name != ""
-}
-
-func (dto *CategoryDTO) ToCategory() *Category {
+func (req *CategoryCreateRequest) ToCategory() *Category {
 	return &Category{
-		ID:            &dto.ID,
-		UserID:        dto.UserID,
-		Name:          dto.Name,
-		SanitizedName: dto.SanitizedName,
-		Emoji:         dto.Emoji,
+		Name:  req.Name,
+		Emoji: req.Emoji,
 	}
+}
+
+type CategoryUpdateRequest struct {
+	Name  string `json:"name"`
+	Emoji string `json:"emoji"`
+}
+type CategoryUpdateResponse struct {
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	SanitizedName string    `json:"sanitized_name"`
+	Emoji         string    `json:"emoji"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+func (req *CategoryUpdateRequest) ToCategory() *Category {
+	return &Category{
+		Name:          req.Name,
+		Emoji:         req.Emoji,
+		SanitizedName: sanitizer.Sanitize(req.Name),
+	}
+}
+func (c *Category) ToCategoryUpdateResponse() *CategoryUpdateResponse {
+	return &CategoryUpdateResponse{
+		ID:            c.ID,
+		Name:          c.Name,
+		SanitizedName: c.SanitizedName,
+		Emoji:         c.Emoji,
+		CreatedAt:     c.CreatedAt,
+	}
+}
+func (req *CategoryUpdateRequest) IsValid() bool {
+	return req.Name != ""
 }
