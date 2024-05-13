@@ -1,9 +1,10 @@
 package service
 
 import (
-	"github.com/google/uuid"
 	"loquegasto-backend/internal/domain"
 	"loquegasto-backend/internal/repository"
+
+	"github.com/google/uuid"
 )
 
 type TransactionsService interface {
@@ -49,7 +50,7 @@ func (s *transactionsService) Create(req *domain.TransactionCreateRequest, userI
 	}
 
 	// Update balance
-	wallet.Balance += transaction.Amount
+	wallet.Balance -= transaction.Amount
 	wallet, err = s.walletRepo.UpdateByID(wallet, wallet.ID, userID)
 	if err != nil {
 		return nil, err
