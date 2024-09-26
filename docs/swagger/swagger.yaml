@@ -1,0 +1,593 @@
+openapi: 3.0.3
+info:
+  title: LoQueGasto API
+  description: Core API to manage operations of LoQueGasto. It includes user creation, wallet, categories and transactions management.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Users
+    description: Endpoints to manage users
+  - name: Wallets
+    description: Endpoints to manage wallets
+  - name: Categories
+    description: Endpoints to manage categories
+  - name: Transactions
+    description: Endpoints to manage transactions
+
+paths:
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Create a user
+      description: Create a new user with the Telegram chat ID
+      security:
+        - ClientID: []
+        - ClientSecret: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+  /auth/telegram:
+    post:
+      tags:
+        - Users
+      summary: Authenticate a user with Telegram
+      description: Returns a token for the given user
+      security:
+        - ClientID: []
+        - ClientSecret: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: User authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /wallets:
+    post:
+      tags:
+        - Wallets
+      summary: Create a wallet
+      description: Create a new wallet for the given user
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletCreateRequest'
+      responses:
+        '201':
+          description: Wallet created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletCreateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    get:
+      tags:
+        - Wallets
+      summary: Get all wallets
+      description: Get all wallets of the given user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Wallets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletsGetAllResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+  /wallet/{wallet_id}:
+    get:
+      tags:
+        - Wallets
+      summary: Get a wallet
+      description: Get a wallet of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: wallet_id
+          in: path
+          schema:
+            type: string
+          description: Wallet ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      responses:
+        '200':
+          description: Wallet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletGetResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    put:
+      tags:
+        - Wallets
+      summary: Update a wallet
+      description: Update a wallet of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: wallet_id
+          in: path
+          schema:
+            type: string
+          description: Wallet ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletUpdateRequest'
+      responses:
+        '200':
+          description: Wallet updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletUpdateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    delete:
+      tags:
+        - Wallets
+      summary: Delete a wallet
+      description: Delete a wallet of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: wallet_id
+          in: path
+          schema:
+            type: string
+          description: Wallet ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      responses:
+        '204':
+          description: Wallet deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+  /categories:
+    post:
+      tags:
+        - Categories
+      summary: Create a category
+      description: Create a new category for the given user
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryCreateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      description: Get all categories of the given user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriesGetAllResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+  /category/{category_id}:
+    get:
+      tags:
+        - Categories
+      summary: Get a category
+      description: Get a category of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category_id
+          in: path
+          schema:
+            type: string
+          description: Category ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      responses:
+        '200':
+          description: Category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryGetResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    put:
+      tags:
+        - Categories
+      summary: Update a category
+      description: Update a category of the given user by ID
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: category_id
+          in: path
+          schema:
+            type: string
+          description: Category ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdateRequest'
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryUpdateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    delete:
+      tags:
+        - Categories
+      summary: Delete a category
+      description: Delete a category of the given user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category_id
+          in: path
+          schema:
+            type: string
+          description: Category ID
+          required: true
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+      responses:
+        '204':
+          description: Category deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+  /transactions:
+    post:
+      tags:
+        - Transactions
+      summary: Create a transaction
+      description: Create a new transaction for the given user
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionCreateRequest'
+      responses:
+        '201':
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionCreateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+    get:
+      tags:
+        - Transactions
+      summary: Get all transactions
+      description: Get all transactions of the given user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: integer
+          description: Timestamp since when to filter
+        - name: to
+          in: query
+          schema:
+            type: integer
+          description: Timestamp until when to filter
+        - name: categories
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+          description: Category IDs to filter
+          example: [b2834095-c452-45a3-b968-f528cc4ed693,a5105db0-1f79-4037-a026-b965e32f7b17]
+        - name: wallets
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+          description: Wallet IDs to filter
+          example: [b2834095-c452-45a3-b968-f528cc4ed693,a5105db0-1f79-4037-a026-b965e32f7b17]
+      responses:
+        '200':
+          description: Transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionsGetAllResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedResponse'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ClientID:
+      type: apiKey
+      in: header
+      name: client_id
+    ClientSecret:
+      type: apiKey
+      in: header
+      name: client_secret
+  responses:
+    InvalidRequestResponse:
+      description: Invalid body
+    UnauthorizedResponse:
+      description: Invalid or missing access token
+  schemas:
+    AuthRequest:
+      type: object
+      required:
+        - chat_id
+      properties:
+        chat_id:
+          type: integer
+          description: Telegram chat ID
+          example: 1234567890
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Token for the user
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyfQ.t42p4AHef69Tyyi88U6-p0utZYYrg7mmCGhoAd7Zffs
+    UserCreateRequest:
+      type: object
+      required:
+        - chat_id
+      properties:
+        chat_id:
+          type: integer
+          description: Telegram chat ID
+          example: 1234567890
+        timezone_offset:
+          type: integer
+          description: GMT offset
+          example: -3
+    UserCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User ID
+          example: 1738a612-e7c1-45d7-a2a8-5dcf72adeacd
+        chat_id:
+          description: Telegram chat ID
+          example: 1234567890
+        created_at:
+          type: integer
+          description: Timestamp when user was created
+          example: 1234567890
+        timezone_offset:
+          type: integer
+          description: GMT offset
+          example: -3
+    WalletCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the wallet
+          example: Debit card
+        initial_amount:
+          type: number
+          description: Current amount in the wallet
+          example: 123.45
+        emoji:
+          type: string
+          description: Emoji to identify the wallet
+          example: 💳
+    WalletCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the wallet
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+        name:
+          type: string
+          description: Name of the wallet
+          example: Debit card
+        sanitized_name:
+          type: string
+          description: Name of the wallet sanitized
+          example: debit_card
+        balance:
+          type: number
+          description: Current balance of the wallet
+          example: 123.45
+        emoji:
+          type: string
+          description: Emoji to identify the wallet
+          example: 💳
+        created_at:
+          type: string
+          description: Date when wallet was created
+          example: "1970-01-01T01:02:03.4567890-03:00"
+    WalletsGetAllResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/WalletCreateResponse'
+    WalletUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the wallet
+          example: Debit card
+        emoji:
+          type: string
+          description: Emoji to identify the wallet
+          example: 💳
+    WalletUpdateResponse:
+      $ref: '#/components/schemas/WalletCreateResponse'
+    WalletGetResponse:
+      $ref: '#/components/schemas/WalletCreateResponse'
+    CategoryCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the category
+          example: Food
+        emoji:
+          type: string
+          description: Emoji to identify the category
+          example: 🍽
+    CategoryCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the category
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+        name:
+          type: string
+          description: Name of the category
+          example: Food
+        emoji:
+          type: string
+          description: Emoji to identify the category
+          example: 🍽
+    CategoriesGetAllResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/CategoryCreateResponse'
+    CategoryUpdateRequest:
+      $ref: '#/components/schemas/CategoryCreateRequest'
+    CategoryUpdateResponse:
+      $ref: '#/components/schemas/CategoryCreateResponse'
+    CategoryGetResponse:
+      $ref: '#/components/schemas/CategoryCreateResponse'
+    TransactionCreateRequest:
+      type: object
+      required:
+        - name
+        - category_id
+        - wallet_id
+        - amount
+        - created_at
+      properties:
+        description:
+          type: string
+          description: Description of the transaction
+          example: Something
+        category_id:
+          type: string
+          description: ID of the category
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+        wallet_id:
+          type: string
+          description: ID of the wallet
+          example: b2834095-c452-45a3-b968-f528cc4ed693
+        amount:
+          type: number
+          description: Amount of the transaction. A negative value means income funds in the wallet.
+          example: 123.45
+        created_at:
+          type: integer
+          description: Timestamp when the transaction was created
+          example: 1234567890
+    TransactionCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the transaction
+          example: 228476dd-9063-42fb-80ca-96fc176db1e5
+        description:
+          type: string
+          description: Description of the transaction
+          example: Food
+        category_id:
+          type: string
+          description: ID of the category
+          example: 7f61b3d7-7a85-458e-be09-581fb8df4011
+        wallet_id:
+          type: string
+          description: ID of the wallet
+          example: b2834095-c452-45a3-b968-f528cc4ed693
+        amount:
+          type: number
+          description: Amount of the transaction. A negative value means income funds in the wallet.
+          example: 123.45
+        created_at:
+          type: integer
+          description: Timestamp when the transaction was created
+          example: 1234567890
+    TransactionsGetAllResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/TransactionCreateResponse'
